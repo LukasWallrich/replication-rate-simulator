@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Is an X% replication rate insightful or meaningless?</title>
+<style>
+  :root{
+    --bg:#faf7f2; --panel:#fffdfa; --ink:#211c17; --muted:#6f655a;
+    --line:#e4dccf; --amber:#c47a06; --amber-soft:#e9b35e; --amber-fill:rgba(196,122,6,.14);
+    --indigo:#384a9c; --indigo-fill:rgba(56,74,156,.13); --pink:#b5347a; --pink-fill:rgba(181,52,122,.12);
+    --good:#2e7d52; --bad:#b23b2e; --shadow:0 1px 3px rgba(40,30,15,.06),0 6px 24px rgba(40,30,15,.05);
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;}
+  h1,h2,h3{font-family:Georgia,"Iowan Old Style","Times New Roman",serif;font-weight:600;line-height:1.2}
+  a{color:var(--amber)}
+  .wrap{max-width:1080px;margin:0 auto;padding:0 22px}
+  header.hero{padding:54px 0 30px;border-bottom:1px solid var(--line)}
+  .kicker{font-size:13px;letter-spacing:.13em;text-transform:uppercase;color:var(--amber);font-weight:600}
+  header.hero h1{font-size:38px;margin:.32em 0 .25em}
+  header.hero p{font-size:18px;color:var(--muted);max-width:760px;margin:.3em 0}
+  .src{font-size:13.5px;color:var(--muted);margin-top:14px}
+  nav.toc{position:sticky;top:0;z-index:30;background:rgba(250,247,242,.93);backdrop-filter:blur(8px);
+    border-bottom:1px solid var(--line);padding:10px 0}
+  nav.toc .wrap{display:flex;gap:6px;flex-wrap:wrap;font-size:13px}
+  nav.toc a{color:var(--muted);text-decoration:none;padding:4px 10px;border-radius:99px;white-space:nowrap}
+  nav.toc a:hover{background:var(--amber-fill);color:var(--amber)}
+  section{padding:46px 0;border-bottom:1px solid var(--line)}
+  section>.wrap>h2{font-size:27px;margin:0 0 6px}
+  .lede{color:var(--muted);max-width:780px;margin:.2em 0 1.4em;font-size:16.5px}
+  .secnum{color:var(--amber);font-size:15px;font-weight:700;margin-right:.5em;font-family:Georgia,serif}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow)}
+  .grid{display:grid;gap:20px}
+  .controls{display:grid;gap:16px;padding:20px 22px}
+  .ctl{display:grid;grid-template-columns:1fr;gap:4px}
+  .ctl .lab{display:flex;justify-content:space-between;align-items:baseline;font-size:14px}
+  .ctl .lab b{font-weight:600}
+  .ctl .lab .val{font-variant-numeric:tabular-nums;color:var(--amber);font-weight:700;font-size:15px}
+  input[type=range]{width:100%;accent-color:var(--amber);height:22px}
+  .hint{font-size:12.5px;color:var(--muted)}
+  canvas{display:block;width:100%;height:auto}
+  .canvas-wrap{padding:16px 18px 6px}
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:1px;background:var(--line);
+    border-top:1px solid var(--line)}
+  .stat{background:var(--panel);padding:14px 16px}
+  .stat .k{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .stat .v{font-size:22px;font-weight:700;font-variant-numeric:tabular-nums;margin-top:2px}
+  .stat .v small{font-size:13px;color:var(--muted);font-weight:500}
+  .verdict{display:inline-flex;align-items:center;gap:9px;font-weight:700;font-size:18px;
+    padding:10px 18px;border-radius:99px;margin:4px 0}
+  .verdict.no{background:rgba(178,59,46,.1);color:var(--bad)}
+  .verdict.yes{background:rgba(46,125,82,.1);color:var(--good)}
+  .verdict .dot{width:11px;height:11px;border-radius:50%}
+  .verdict.no .dot{background:var(--bad)} .verdict.yes .dot{background:var(--good)}
+  .row2{display:grid;grid-template-columns:340px 1fr;gap:20px;align-items:start}
+  @media(max-width:820px){.row2{grid-template-columns:1fr}}
+  .presets{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:4px}
+  button.pre{font:inherit;font-size:13px;padding:6px 13px;border:1px solid var(--line);background:var(--panel);
+    border-radius:99px;cursor:pointer;color:var(--ink)}
+  button.pre:hover{border-color:var(--amber);color:var(--amber)}
+  button.pre.act{background:var(--amber);color:#fff;border-color:var(--amber)}
+  .legend{display:flex;gap:18px;flex-wrap:wrap;font-size:13px;color:var(--muted);padding:0 18px 12px}
+  .legend span{display:inline-flex;align-items:center;gap:6px}
+  .swatch{width:14px;height:10px;border-radius:2px;display:inline-block}
+  table.proj{width:100%;border-collapse:collapse;font-size:13.5px}
+  table.proj th,table.proj td{padding:7px 9px;border-bottom:1px solid var(--line);text-align:center}
+  table.proj th{font-size:11.5px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);font-weight:600}
+  table.proj td:first-child,table.proj th:first-child{text-align:left}
+  table.proj input[type=range]{width:90px;height:18px}
+  .minival{font-variant-numeric:tabular-nums;font-size:12px;color:var(--amber);font-weight:700}
+  .headline{font-family:Georgia,serif;font-size:46px;font-weight:700;line-height:1;font-variant-numeric:tabular-nums}
+  .headline small{font-size:15px;color:var(--muted);font-family:-apple-system,sans-serif;font-weight:500;display:block;margin-top:4px}
+  .punch{background:var(--amber-fill);border:1px solid var(--amber-soft);border-radius:12px;padding:16px 20px;margin-top:18px;font-size:15.5px}
+  .punch b{color:var(--amber)}
+  .valtable{width:100%;border-collapse:collapse;font-size:13.5px;font-variant-numeric:tabular-nums}
+  .valtable th,.valtable td{padding:7px 12px;border-bottom:1px solid var(--line);text-align:right}
+  .valtable th:first-child,.valtable td:first-child{text-align:left;font-variant-numeric:normal}
+  .ok{color:var(--good);font-weight:700}.warn{color:var(--amber);font-weight:700}
+  .note{font-size:13.5px;color:var(--muted);font-style:italic}
+  details{margin-top:14px;font-size:14.5px}
+  details summary{cursor:pointer;color:var(--amber);font-weight:600}
+  .twocol{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+  @media(max-width:820px){.twocol{grid-template-columns:1fr}}
+  footer{padding:40px 0 70px;color:var(--muted);font-size:14px}
+  .tag{display:inline-block;font-size:11px;background:var(--indigo-fill);color:var(--indigo);
+    padding:2px 8px;border-radius:6px;font-weight:600;margin-left:8px;vertical-align:middle}
+  .badge{display:inline-block;font-size:11px;padding:2px 9px;border-radius:99px;font-weight:700;
+    margin-left:10px;vertical-align:middle;letter-spacing:.02em}
+  .badge.paper{background:rgba(46,125,82,.13);color:var(--good)}
+  .badge.ext{background:var(--indigo-fill);color:var(--indigo)}
+  .key{display:flex;gap:18px;flex-wrap:wrap;margin-top:16px;font-size:13.5px;color:var(--muted)}
+  .key b{font-weight:600}
+</style>
+</head>
+<body>
+<header class="hero"><div class="wrap">
+  <div class="kicker">Interactive reproduction &amp; stress-test</div>
+  <h1>Is an “X% replication rate” insightful or meaningless?</h1>
+  <p>A live simulation of the argument in Devezer &amp; Buzbas (2026), <i>“The Difference Between
+  ‘Replicable’ and ‘Not replicable’ is not Itself Scientifically Replicable.”</i> Move the sliders
+  and watch when a reported replication percentage carries information about the underlying science —
+  and when it cannot, no matter how many studies you run.</p>
+  <div class="src">arXiv:2604.26268v1 · benchmark model (Eq. 1–2), operational model (Eq. 3–4),
+  Many Labs 4 reanalysis. Paper-badged sections compute the paper’s own formulas in your browser; beyond-paper sections use separate, clearly-labelled illustrative models.</div>
+  <div class="key">
+    <span><span class="badge paper" style="margin-left:0">Reproduces the paper</span> direct computation of Devezer &amp; Buzbas’s formulas and figures.</span>
+    <span><span class="badge ext" style="margin-left:0">Beyond the paper</span> our analogies / complementary arguments, built on (but not claimed by) the paper.</span>
+  </div>
+</div></header>
+
+<nav class="toc"><div class="wrap">
+  <a href="#floor">1 · Variance floor</a>
+  <a href="#disc">2 · Discriminability</a>
+  <a href="#agg">3 · The headline rate ★</a>
+  <a href="#ident">4 · Why ρ is invisible</a>
+  <a href="#real">5 · Real projects</a>
+  <a href="#stress">6 · Stress test</a>
+  <a href="#coin">7 · Coin purse</a>
+  <a href="#reprate">8 · Where 36% comes from</a>
+  <a href="#valid">9 · Validation</a>
+</div></nav>
+
+<!-- ============ SECTION 1: FLOOR ============ -->
+<section id="floor"><div class="wrap">
+  <h2><span class="secnum">1</span>The irreducible variance floor<span class="badge paper">Reproduces the paper · Eq. 2, Box 3</span></h2>
+  <p class="lede">A replication project reports the fraction of studies that “replicated,” <i>μ̂ = X/m</i>.
+  If the studies are not exact copies of each other, their true replicability rates vary — captured by the
+  intraclass correlation <i>ρ</i>. Heterogeneity puts a <b>floor</b> on how precise the reported rate can ever be:
+  past it, adding studies buys you almost nothing.</p>
+  <p class="note" style="margin:-10px 0 18px">This is the paper’s <b>benchmark model</b>: it assumes the <i>m</i> studies share one latent
+  replicability rate (exchangeable) and that a value of <i>ρ</i> is known or imported. The panel then shows the sampling
+  distribution of <i>X/m</i> under that assumption. It is a diagnostic of what a given <i>ρ</i> would imply — not a claim
+  that raw one-verdict-per-study data reveal this shape (under the operational model of §4 the observed counts look like a plain Binomial).</p>
+  <div class="row2">
+    <div class="card controls">
+      <div class="ctl"><div class="lab"><b>True mean replicability μ</b><span class="val" id="f_mu_v">0.50</span></div>
+        <input type="range" id="f_mu" min="0.02" max="0.98" step="0.01" value="0.5">
+        <div class="hint">The fraction that would replicate on average.</div></div>
+      <div class="ctl"><div class="lab"><b>Heterogeneity ρ</b><span class="val" id="f_rho_v">0.10</span></div>
+        <input type="range" id="f_rho" min="0" max="0.5" step="0.01" value="0.1">
+        <div class="hint">0 = exact replications. The paper’s ML4 reanalysis puts ρ around 0.18–0.37; ρ ≈ 0.1–0.2 are used illustratively for RPP/SCORE.</div></div>
+      <div class="ctl"><div class="lab"><b>Number of studies m</b><span class="val" id="f_m_v">100</span></div>
+        <input type="range" id="f_m" min="5" max="500" step="1" value="100">
+        <div class="hint">RPP = 100, SCORE = 274, Many Labs 4 = 17.</div></div>
+    </div>
+    <div class="card">
+      <div class="canvas-wrap"><canvas id="f_dist"></canvas></div>
+      <div class="legend"><span><i class="swatch" style="background:var(--amber)"></i>Sampling distribution of the reported rate X/m</span>
+        <span><i class="swatch" style="background:var(--amber-fill);border:1px solid var(--amber-soft)"></i>95% interval (span of the highest-density set)</span></div>
+      <div class="stats">
+        <div class="stat"><div class="k">95% interval width</div><div class="v" id="f_width">—</div></div>
+        <div class="stat"><div class="k">SD of reported rate</div><div class="v" id="f_sd">—</div></div>
+        <div class="stat"><div class="k">Effective studies mₑ</div><div class="v" id="f_me">—</div></div>
+        <div class="stat"><div class="k">Floor (SD as m→∞)</div><div class="v" id="f_floor">—</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="card" style="margin-top:20px"><div class="canvas-wrap"><canvas id="f_width_curve"></canvas></div>
+    <div class="legend"><span>Width of the 95% interval as you add studies — it stops shrinking at the floor set by ρ.</span></div></div>
+  <div class="punch" id="f_punch"></div>
+</div></section>
+
+<!-- ============ SECTION 2: DISCRIMINABILITY ============ -->
+<section id="disc"><div class="wrap">
+  <h2><span class="secnum">2</span>Can you tell “replicable” from “not replicable”?<span class="badge paper">Reproduces the paper · Fig. 1</span></h2>
+  <p class="lede">Take a genuinely high-replicability result and a genuinely low one. If the project is to demarcate
+  them, the sampling distributions of their reported rates must not overlap. Watch the verdict flip as
+  heterogeneity rises — even with an impractically large number of studies.</p>
+  <div class="row2">
+    <div class="card controls">
+      <div class="presets"><span class="hint">Fig 1 examples:</span>
+        <button class="pre" data-d="0,50">ρ=0, m=50</button>
+        <button class="pre" data-d="0.15,50">ρ=0.15, m=50</button>
+        <button class="pre" data-d="0.1,500">ρ=0.1, m=500</button></div>
+      <div class="ctl"><div class="lab"><b>“High” result μ<sub>hi</sub></b><span class="val" id="d_hi_v">0.80</span></div>
+        <input type="range" id="d_hi" min="0.5" max="0.99" step="0.01" value="0.8"></div>
+      <div class="ctl"><div class="lab"><b>“Low” result μ<sub>lo</sub></b><span class="val" id="d_lo_v">0.20</span></div>
+        <input type="range" id="d_lo" min="0.01" max="0.5" step="0.01" value="0.2"></div>
+      <div class="ctl"><div class="lab"><b>Heterogeneity ρ</b><span class="val" id="d_rho_v">0.00</span></div>
+        <input type="range" id="d_rho" min="0" max="0.5" step="0.01" value="0"></div>
+      <div class="ctl"><div class="lab"><b>Number of studies m</b><span class="val" id="d_m_v">50</span></div>
+        <input type="range" id="d_m" min="5" max="500" step="1" value="50"></div>
+    </div>
+    <div class="card">
+      <div class="canvas-wrap"><canvas id="d_dist"></canvas></div>
+      <div class="legend"><span><i class="swatch" style="background:var(--indigo)"></i>High result</span>
+        <span><i class="swatch" style="background:var(--pink)"></i>Low result</span></div>
+      <div style="padding:6px 18px 18px"><span class="verdict" id="d_verdict"><span class="dot"></span><span id="d_vtext"></span></span>
+        <div class="hint" id="d_detail" style="margin-top:6px"></div></div>
+    </div>
+  </div>
+</div></section>
+
+<!-- ============ SECTION 3: AGGREGATION (CENTERPIECE) ============ -->
+<section id="agg"><div class="wrap">
+  <h2><span class="secnum">3</span>The headline rate across a project <span class="badge paper">Paper’s argument · examples illustrative</span> <span class="tag">your question</span></h2>
+  <p class="lede">A large project samples results from different literatures — different effect sizes, different
+  replication conditions — and collapses them into one number. Below are two projects built from completely
+  different mixtures of results. Tune them to the <b>same headline %</b>, then ask: what did that number tell you?</p>
+
+  <div class="presets" style="margin-bottom:16px">
+    <span class="hint">Presets:</span>
+    <button class="pre" id="agg_p1">Healthy vs Crisis → same 50%</button>
+    <button class="pre" id="agg_p2">Both land on 36% (RPP-style)</button>
+  </div>
+
+  <div class="twocol">
+    <div class="card" style="overflow:hidden">
+      <div style="padding:16px 18px 4px;display:flex;justify-content:space-between;align-items:flex-start">
+        <div><div style="font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em">Project A</div>
+          <div class="headline" id="A_head">—<small id="A_sub"></small></div></div>
+        <div style="text-align:right"><div class="minival" id="A_exp"></div><div class="hint">95% range of observed rate</div></div>
+      </div>
+      <table class="proj" id="A_tbl"></table>
+    </div>
+    <div class="card" style="overflow:hidden">
+      <div style="padding:16px 18px 4px;display:flex;justify-content:space-between;align-items:flex-start">
+        <div><div style="font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em">Project B</div>
+          <div class="headline" id="B_head">—<small id="B_sub"></small></div></div>
+        <div style="text-align:right"><div class="minival" id="B_exp"></div><div class="hint">95% range of observed rate</div></div>
+      </div>
+      <table class="proj" id="B_tbl"></table>
+    </div>
+  </div>
+  <div class="card" style="margin-top:18px"><div class="canvas-wrap"><canvas id="agg_dist"></canvas></div>
+    <div class="legend"><span><i class="swatch" style="background:var(--indigo)"></i>Project A headline-rate distribution</span>
+      <span><i class="swatch" style="background:var(--pink)"></i>Project B headline-rate distribution</span></div></div>
+  <div class="punch" id="agg_punch"></div>
+</div></section>
+
+<!-- ============ SECTION 4: NON-IDENTIFIABILITY ============ -->
+<section id="ident"><div class="wrap">
+  <h2><span class="secnum">4</span>Why heterogeneity is invisible in the verdicts<span class="badge paper">Reproduces the paper · operational model, k=1</span></h2>
+  <p class="lede">Each lab reports one verdict: replicated or not. The two clouds below are <b>real</b> samples of
+  per-study true replicability rates φ — same average μ, but the left cloud is nearly uniform and the right is
+  split between near-failures and near-certainties. Hugely different worlds. Yet the count of “replicated”
+  verdicts they produce has the <b>same</b> distribution. One binary verdict per study erases ρ entirely.</p>
+  <div class="row2">
+    <div class="card controls">
+      <div class="ctl"><div class="lab"><b>Shared mean μ</b><span class="val" id="i_mu_v">0.50</span></div>
+        <input type="range" id="i_mu" min="0.1" max="0.9" step="0.01" value="0.5"></div>
+      <div class="ctl"><div class="lab"><b>“Homogeneous” world ρ<sub>A</sub></b><span class="val" id="i_ra_v">0.02</span></div>
+        <input type="range" id="i_ra" min="0" max="0.5" step="0.01" value="0.02"></div>
+      <div class="ctl"><div class="lab"><b>“Heterogeneous” world ρ<sub>B</sub></b><span class="val" id="i_rb_v">0.30</span></div>
+        <input type="range" id="i_rb" min="0" max="0.5" step="0.01" value="0.3"></div>
+      <div class="ctl"><div class="lab"><b>Studies m</b><span class="val" id="i_m_v">100</span></div>
+        <input type="range" id="i_m" min="10" max="300" step="1" value="100"></div>
+      <button class="pre" id="i_resim" style="justify-self:start">↻ Re-simulate</button>
+    </div>
+    <div class="card">
+      <div class="canvas-wrap"><canvas id="i_phi"></canvas></div>
+      <div class="legend"><span>Each dot = one study’s true replicability rate φᵢ. Same μ, opposite spreads.</span></div>
+      <div class="canvas-wrap" style="padding-top:0"><canvas id="i_verdict"></canvas></div>
+      <div class="legend"><span><i class="swatch" style="background:#cfc8bb"></i>Distribution of “# replicated” verdicts — <b style="color:var(--ink)">one curve: identical for both worlds</b> (Binomial(m, μ), ρ cancels out)</span></div>
+    </div>
+  </div>
+  <div class="punch" id="i_punch"></div>
+</div></section>
+
+<!-- ============ SECTION 5: REAL PROJECTS ============ -->
+<section id="real"><div class="wrap">
+  <h2><span class="secnum">5</span>What this means for the real headline numbers<span class="badge paper">Reproduces the paper · RPP, SCORE, ML4</span></h2>
+  <p class="lede">Each project’s size with an assumed heterogeneity, through the effective-sample-size formula
+  <i>m</i><sub>e</sub> = <i>m</i> / [1+(<i>m</i>−1)<i>ρ</i>]. For RPP and SCORE the ρ values are <i>illustrative</i> (Box 3 of the paper
+  uses ρ ≈ 0.1–0.2 as examples); for ML4 they are the paper’s own auxiliary-model estimates. The right-hand band is
+  the benchmark-model sampling interval for the reported rate <i>X/m</i> at the stated (μ, ρ) — not a confidence interval inferred from the headline.</p>
+  <div class="card" style="padding:6px 6px"><table class="valtable" id="real_tbl"></table></div>
+  <p class="note" style="margin-top:14px">For ML4 the binary headline (“1 of 17 replicated”, ≈6%) and the
+  <b>diagnostic mean μ = 0.565</b> are different things: the latter comes from the paper’s continuous effect-size
+  (auxiliary) model and is what the paper uses to locate ML4 on the heterogeneity landscape. At that μ and ρ = 0.175,
+  the benchmark sampling interval for <i>X/m</i> spans <b>0.12–0.94</b> — nearly the whole scale — and the 17 sites
+  carry the weight of only ~2–5 exact replications.</p>
+</div></section>
+
+<!-- ============ SECTION 6: STRESS TEST ============ -->
+<section id="stress"><div class="wrap">
+  <h2><span class="secnum">6</span>Stress test: when <i>is</i> the rate informative?<span class="badge ext">Beyond the paper · built on its interval machinery</span></h2>
+  <p class="lede">The honest answer is conditional, not “always meaningless.” This map sweeps μ and ρ and marks where a
+  result’s reported rate could be cleanly separated from its mirror image (1−μ) at the chosen m — i.e. where the
+  binary label carries real information. Drag m and watch the informative region collapse as heterogeneity grows.</p>
+  <div class="row2">
+    <div class="card controls">
+      <div class="ctl"><div class="lab"><b>Studies m</b><span class="val" id="s_m_v">100</span></div>
+        <input type="range" id="s_m" min="5" max="500" step="1" value="100"></div>
+      <div id="s_summary" style="font-size:14.5px"></div>
+    </div>
+    <div class="card"><div class="canvas-wrap"><canvas id="s_map"></canvas></div>
+      <div class="legend"><span><i class="swatch" style="background:var(--good)"></i>Separable (informative)</span>
+        <span><i class="swatch" style="background:#d9d2c6"></i>Overlapping (uninformative)</span></div></div>
+  </div>
+  <details><summary>The bottom line — read this for the direct answer to your question</summary>
+    <div id="answer" style="margin-top:10px"></div></details>
+</div></section>
+
+<!-- ============ SECTION 7: COIN PURSE ============ -->
+<section id="coin"><div class="wrap">
+  <h2><span class="secnum">7</span>The coin purse, made exact: fair coins vs rigged coins<span class="badge ext">Beyond the paper · our analogy</span></h2>
+  <p class="lede">Your analogy, sharpened. Give every coin a hidden bias φ — its chance of landing heads — and
+  read “heads” as “this study replicated.” You never see φ; you get <b>one flip per coin</b>. The
+  <b>rigged</b> purse (two-headed and two-tailed coins) and the <b>fair</b> purse (every coin ~50/50) share the
+  same average bias, so they produce the same flips. The average is knowable; the individual coins are not.</p>
+  <div class="row2">
+    <div class="card controls">
+      <div class="ctl"><div class="lab"><b>Average bias (heads rate) μ</b><span class="val" id="co_mu_v">0.50</span></div>
+        <input type="range" id="co_mu" min="0.05" max="0.95" step="0.01" value="0.5">
+        <div class="hint">= the replication rate the project would report.</div></div>
+      <div class="ctl"><div class="lab"><b>Rigging of purse A</b><span class="val" id="co_rig_v">1.00</span></div>
+        <input type="range" id="co_rig" min="0" max="1" step="0.01" value="1">
+        <div class="hint">0 = every coin identical (φ≈μ; literally <i>fair</i> only when μ=0.50). 1 = fully rigged (each coin φ=0 or φ=1). Purse B always sits at 0.</div></div>
+      <div class="ctl"><div class="lab"><b>Coins you grab (a “handful”)</b><span class="val" id="co_n_v">20</span></div>
+        <input type="range" id="co_n" min="1" max="50" step="1" value="20"></div>
+      <button class="pre" id="co_flip" style="justify-self:start">↻ Flip again</button>
+    </div>
+    <div class="card">
+      <div class="canvas-wrap"><canvas id="co_view"></canvas></div>
+      <div class="legend"><span><i class="swatch" style="background:var(--amber);border-radius:50%"></i>landed heads (replicated)</span>
+        <span><i class="swatch" style="border:1.5px solid var(--amber);border-radius:50%;background:transparent"></i>landed tails</span>
+        <span>horizontal position = hidden bias φ</span></div>
+      <div class="stats">
+        <div class="stat"><div class="k">Average bias</div><div class="v" id="co_avg">—</div></div>
+        <div class="stat"><div class="k">Expected heads in handful</div><div class="v" id="co_exp">—</div></div>
+        <div class="stat"><div class="k">Heads — rigged purse</div><div class="v" id="co_ha">—</div></div>
+        <div class="stat"><div class="k">Heads — identical-bias purse</div><div class="v" id="co_hb">—</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="punch" id="co_punch"></div>
+</div></section>
+
+<!-- ============ SECTION 8: WHERE 36% COMES FROM ============ -->
+<section id="reprate"><div class="wrap">
+  <h2><span class="secnum">8</span>Where does a replication rate come from?<span class="badge ext">Beyond the paper · a complementary argument</span></h2>
+  <p class="lede">How a <b>careful</b> literature can still replicate at 36%. Each tested hypothesis is a true effect
+  with some probability — the <b>base rate</b>. Only significant originals get published, so the pool that gets
+  replicated is a mix of real effects and false positives. The rate that comes out confounds base rate, statistical
+  power, and effect heterogeneity — which is why the number alone can’t grade a field.</p>
+  <p class="note" style="margin:-8px 0 18px">This base-rate model is a separate, classic argument (Ioannidis-style), <b>not</b> part of Devezer &amp; Buzbas. It complements them: it shows how a low rate <i>can</i> arise, while the paper explains why the rate <i>can’t be interpreted</i> as a verdict.</p>
+  <div class="presets" style="margin-bottom:14px"><span class="hint">Two roads to ~36%:</span>
+    <button class="pre" id="rr_sick">“Sick”: mostly false positives</button>
+    <button class="pre" id="rr_solid">“Solid” but underpowered replications</button></div>
+  <div class="row2">
+    <div class="card controls">
+      <div class="ctl"><div class="lab"><b>Base rate of true effects π</b><span class="val" id="rr_pi_v">0.30</span></div>
+        <input type="range" id="rr_pi" min="0.01" max="0.95" step="0.01" value="0.3">
+        <div class="hint">Fraction of tested hypotheses that are genuinely real.</div></div>
+      <div class="ctl"><div class="lab"><b>Original-study power</b><span class="val" id="rr_w0_v">0.80</span></div>
+        <input type="range" id="rr_w0" min="0.1" max="0.99" step="0.01" value="0.8"></div>
+      <div class="ctl"><div class="lab"><b>Replication power</b><span class="val" id="rr_wr_v">0.90</span></div>
+        <input type="range" id="rr_wr" min="0.1" max="0.99" step="0.01" value="0.9">
+        <div class="hint">How likely a <i>real</i> effect reaches significance again. Low = small samples, shrinking effects, or effects that don’t transfer to the new context (a separate knob here, though such context-sensitivity is one source of the paper’s ρ).</div></div>
+      <div class="ctl"><div class="lab"><b>Error rate α</b><span class="val" id="rr_a_v">0.05</span></div>
+        <input type="range" id="rr_a" min="0.01" max="0.2" step="0.01" value="0.05"></div>
+    </div>
+    <div class="card">
+      <div style="padding:18px 20px 2px;display:flex;gap:30px;align-items:baseline">
+        <div><div class="headline" id="rr_R">—<small>expected replication rate</small></div></div>
+        <div><div class="minival" id="rr_ppv" style="font-size:26px">—</div><div class="hint">of published findings are <b>real</b> (PPV)</div></div>
+      </div>
+      <div class="canvas-wrap"><canvas id="rr_bar"></canvas></div>
+      <div class="legend"><span><i class="swatch" style="background:var(--good)"></i>real &amp; replicated</span>
+        <span><i class="swatch" style="background:var(--bad)"></i>false, “replicated” by fluke</span>
+        <span><i class="swatch" style="background:var(--amber-soft)"></i>real but missed</span>
+        <span><i class="swatch" style="background:#d9d2c6"></i>false &amp; correctly failed</span></div>
+    </div>
+  </div>
+  <div class="punch" id="rr_punch"></div>
+</div></section>
+
+<!-- ============ SECTION 9: VALIDATION ============ -->
+<section id="valid"><div class="wrap">
+  <h2><span class="secnum">9</span>Validation against the paper</h2>
+  <p class="lede">Durable correctness check: the engine’s output vs. the numbers printed in the paper.
+  Computed live, in this page.</p>
+  <div class="card" style="padding:6px 6px"><table class="valtable" id="valid_tbl"></table></div>
+</div></section>
+
+<footer><div class="wrap">
+  Built to reproduce Devezer &amp; Buzbas (2026), arXiv:2604.26268v1. Math runs entirely client-side;
+  no data leaves your browser. HDI = highest-density interval (greedy ≥95% mass), matching the paper’s convention.
+</div></footer>
+
+<script>
+"use strict";
+/* ---------------- math core (validated headlessly) ---------------- */
+const C=[0.99999999999980993,676.5203681218851,-1259.1392167224028,771.32342877765313,
+-176.61502916214059,12.507343278686905,-0.13857109526572012,9.9843695780195716e-6,1.5056327351493116e-7];
+function logGamma(z){if(z<0.5)return Math.log(Math.PI/Math.sin(Math.PI*z))-logGamma(1-z);
+  z-=1;let x=C[0];for(let i=1;i<9;i++)x+=C[i]/(z+i);const t=z+7.5;
+  return 0.5*Math.log(2*Math.PI)+(z+0.5)*Math.log(t)-t+Math.log(x);}
+const logBeta=(a,b)=>logGamma(a)+logGamma(b)-logGamma(a+b);
+const logChoose=(n,k)=>logGamma(n+1)-logGamma(k+1)-logGamma(n-k+1);
+function normCdf(x){const t=1/(1+0.3275911*Math.abs(x)/Math.SQRT2);
+  const y=1-(((((1.061405429*t-1.453152027)*t)+1.421413741)*t-0.284496736)*t+0.254829592)*t*Math.exp(-x*x/2);
+  return x>=0?0.5*(1+y):0.5*(1-y);}
+function betaBinomPmf(m,mu,rho){const p=new Array(m+1);
+  mu=Math.min(Math.max(mu,1e-6),1-1e-6);
+  if(rho<=1e-9){for(let x=0;x<=m;x++)p[x]=Math.exp(logChoose(m,x)+x*Math.log(mu)+(m-x)*Math.log(1-mu));return p;}
+  const s=(1-rho)/rho,a=mu*s,b=(1-mu)*s,lB=logBeta(a,b);
+  for(let x=0;x<=m;x++)p[x]=Math.exp(logChoose(m,x)+logBeta(x+a,m-x+b)-lB);return p;}
+function hdi(pmf,m,level=0.95){const idx=pmf.map((_,i)=>i).sort((i,j)=>pmf[j]-pmf[i]);
+  const inS=new Array(pmf.length).fill(false);let mass=0;
+  for(const i of idx){inS[i]=true;mass+=pmf[i];if(mass>=level)break;}
+  let lo=pmf.length,hi=-1;for(let i=0;i<inS.length;i++)if(inS[i]){lo=Math.min(lo,i);hi=Math.max(hi,i);}
+  return{lo:lo/m,hi:hi/m,loC:lo,hiC:hi,mass};}
+const me=(m,rho)=>m/(1+(m-1)*rho);
+function bbVar(m,mu,rho){return mu*(1-mu)*(1/m+(m-1)/m*rho);} // Eq.2
+function bbMean(pmf,m){let s=0;for(let x=0;x<=m;x++)s+=x*pmf[x];return s/m;}
+/* RNG for the non-identifiability demo */
+let _seed=12345;function rnd(){_seed=(_seed*1103515245+12345)&0x7fffffff;return _seed/0x7fffffff;}
+function gammaSample(k){ // Marsaglia-Tsang, k>=1; for k<1 use boost
+  if(k<1){return gammaSample(k+1)*Math.pow(rnd(),1/k);}
+  const d=k-1/3,c=1/Math.sqrt(9*d);
+  while(true){let x,v;do{const u1=rnd(),u2=rnd();x=Math.sqrt(-2*Math.log(u1+1e-12))*Math.cos(2*Math.PI*u2);v=1+c*x;}while(v<=0);
+    v=v*v*v;const u=rnd();if(u<1-0.0331*x*x*x*x)return d*v;if(Math.log(u+1e-12)<0.5*x*x+d*(1-v+Math.log(v)))return d*v;}}
+function betaSample(a,b){const x=gammaSample(a),y=gammaSample(b);return x/(x+y);}
+function fmt(x,d=2){return x.toFixed(d);}
+function pct(x){return (x*100).toFixed(0)+"%";}
+
+/* ---------------- canvas plotting ---------------- */
+function setupCanvas(cv,h){const dpr=window.devicePixelRatio||1;const w=cv.clientWidth||cv.parentElement.clientWidth-36;
+  cv.width=w*dpr;cv.height=h*dpr;cv.style.height=h+"px";const ctx=cv.getContext("2d");ctx.scale(dpr,dpr);return{ctx,w,h};}
+const css=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+function axes(ctx,w,h,pad,maxY,title){
+  ctx.strokeStyle=css('--line');ctx.lineWidth=1;ctx.beginPath();
+  ctx.moveTo(pad.l,pad.t);ctx.lineTo(pad.l,h-pad.b);ctx.lineTo(w-pad.r,h-pad.b);ctx.stroke();
+  ctx.fillStyle=css('--muted');ctx.font="12px -apple-system,sans-serif";ctx.textAlign="center";
+  for(let t=0;t<=1.0001;t+=0.2){const x=pad.l+(w-pad.l-pad.r)*t;ctx.fillText(t.toFixed(1),x,h-pad.b+16);
+    ctx.strokeStyle='rgba(0,0,0,.04)';ctx.beginPath();ctx.moveTo(x,pad.t);ctx.lineTo(x,h-pad.b);ctx.stroke();}
+  ctx.fillText("reported replication rate  X/m",(pad.l+w-pad.r)/2,h-4);
+  if(title){ctx.textAlign="left";ctx.fillStyle=css('--ink');ctx.font="13px -apple-system";ctx.fillText(title,pad.l,16);}
+}
+function drawBars(ctx,pmf,m,w,h,pad,color,fillHDI,hdiColor){
+  const X=t=>pad.l+(w-pad.l-pad.r)*t;const plotW=w-pad.l-pad.r;
+  let maxP=Math.max(...pmf);const Y=p=>h-pad.b-(h-pad.t-pad.b)*(p/maxP);
+  const hd=hdi(pmf,m);
+  if(fillHDI){ctx.fillStyle=hdiColor;ctx.fillRect(X(hd.lo-0.5/m),pad.t,X(hd.hi+0.5/m)-X(hd.lo-0.5/m),h-pad.t-pad.b);}
+  const bw=Math.max(1,plotW/(m+1)*0.86);
+  for(let x=0;x<=m;x++){const cx=X(x/m);ctx.fillStyle=color;
+    ctx.globalAlpha=(x>=hd.loC&&x<=hd.hiC)?0.95:0.34;
+    ctx.fillRect(cx-bw/2,Y(pmf[x]),bw,h-pad.b-Y(pmf[x]));}
+  ctx.globalAlpha=1;return hd;
+}
+
+/* ============ SECTION 1 ============ */
+const F={mu:document.getElementById('f_mu'),rho:document.getElementById('f_rho'),m:document.getElementById('f_m')};
+function renderFloor(){
+  const mu=+F.mu.value,rho=+F.rho.value,m=+F.m.value;
+  f_mu_v.textContent=fmt(mu);f_rho_v.textContent=fmt(rho);f_m_v.textContent=m;
+  const pmf=betaBinomPmf(m,mu,rho);
+  const {ctx,w,h}=setupCanvas(f_dist,260);const pad={l:44,r:14,t:24,b:34};
+  ctx.clearRect(0,0,w,h);axes(ctx,w,h,pad,0,"Distribution of the reported rate");
+  const hd=drawBars(ctx,pmf,m,w,h,pad,css('--amber'),true,css('--amber-fill'));
+  f_width.textContent=fmt(hd.hi-hd.lo,2);
+  f_sd.textContent=fmt(Math.sqrt(bbVar(m,mu,rho)),3);
+  f_me.textContent=fmt(me(m,rho),1)+(rho>0?'':' ');
+  f_floor.textContent=fmt(Math.sqrt(mu*(1-mu)*rho),3);
+  // width curve vs m
+  const {ctx:c2,w:w2,h:h2}=setupCanvas(f_width_curve,180);const p2={l:44,r:14,t:22,b:30};
+  c2.clearRect(0,0,w2,h2);
+  const mmax=500;const widths=[];for(let mm=5;mm<=mmax;mm+=3){widths.push([mm,(()=>{const pp=betaBinomPmf(mm,mu,rho);const hh=hdi(pp,mm);return hh.hi-hh.lo;})()]);}
+  const floorW=2*1.96*Math.sqrt(mu*(1-mu)*rho); // approx asymptotic width
+  let maxW=Math.max(...widths.map(d=>d[1]),floorW,0.1);
+  c2.strokeStyle=css('--line');c2.beginPath();c2.moveTo(p2.l,p2.t);c2.lineTo(p2.l,h2-p2.b);c2.lineTo(w2-p2.r,h2-p2.b);c2.stroke();
+  c2.fillStyle=css('--muted');c2.font="12px -apple-system";c2.textAlign="right";
+  for(let gy=0;gy<=1.0001;gy+=0.25){const yy=h2-p2.b-(h2-p2.t-p2.b)*(gy/maxW>1?1:gy/maxW);if(gy<=maxW)c2.fillText(fmt(gy,2),p2.l-6,yy+4);}
+  c2.textAlign="center";c2.fillText("number of studies m  →",(p2.l+w2-p2.r)/2,h2-3);
+  const Xm=mm=>p2.l+(w2-p2.l-p2.r)*(mm-5)/(mmax-5);const Yw=ww=>h2-p2.b-(h2-p2.t-p2.b)*(ww/maxW);
+  if(rho>0){c2.strokeStyle=css('--pink');c2.setLineDash([5,4]);c2.beginPath();c2.moveTo(p2.l,Yw(floorW));c2.lineTo(w2-p2.r,Yw(floorW));c2.stroke();c2.setLineDash([]);
+    c2.fillStyle=css('--pink');c2.textAlign="left";c2.fillText("floor ≈ "+fmt(floorW,2),p2.l+6,Yw(floorW)-5);}
+  c2.strokeStyle=css('--amber');c2.lineWidth=2;c2.beginPath();
+  widths.forEach((d,i)=>{const x=Xm(d[0]),y=Yw(d[1]);i?c2.lineTo(x,y):c2.moveTo(x,y);});c2.stroke();
+  c2.fillStyle=css('--amber');c2.beginPath();c2.arc(Xm(m),Yw(hd.hi-hd.lo),4,0,7);c2.fill();
+  const needed=rho>0?Math.round(1/rho):Infinity;
+  f_punch.innerHTML = rho<=0.001
+    ? `With exact replications (ρ=0) the interval keeps shrinking — more studies really do buy precision. <b>This is the only regime where “more replications” reliably helps.</b>`
+    : `At ρ=${fmt(rho)}, ${m} studies behave like <b>${fmt(me(m,rho),1)} exact ones</b>, and that effective count can never exceed <b>${needed}</b> no matter how many you run. The reported rate’s uncertainty bottoms out at an interval ~${fmt(floorW,2)} wide — a floor that <b>no amount of replication removes</b>.`;
+}
+[F.mu,F.rho,F.m].forEach(e=>e.addEventListener('input',renderFloor));
+
+/* ============ SECTION 2 ============ */
+const D={hi:d_hi,lo:d_lo,rho:d_rho,m:d_m};
+function renderDisc(){
+  const hi=+D.hi.value,lo=+D.lo.value,rho=+D.rho.value,m=+D.m.value;
+  d_hi_v.textContent=fmt(hi);d_lo_v.textContent=fmt(lo);d_rho_v.textContent=fmt(rho);d_m_v.textContent=m;
+  const pH=betaBinomPmf(m,hi,rho),pL=betaBinomPmf(m,lo,rho);
+  const {ctx,w,h}=setupCanvas(d_dist,300);const pad={l:44,r:14,t:24,b:34};
+  ctx.clearRect(0,0,w,h);axes(ctx,w,h,pad,0,"High vs low result — do the intervals overlap?");
+  const maxP=Math.max(...pH,...pL);const X=t=>pad.l+(w-pad.l-pad.r)*t;const Y=p=>h-pad.b-(h-pad.t-pad.b)*(p/maxP);
+  const hdH=hdi(pH,m),hdL=hdi(pL,m);const bw=Math.max(1,(w-pad.l-pad.r)/(m+1)*0.8);
+  function bars(pmf,hd,col){for(let x=0;x<=m;x++){ctx.fillStyle=col;ctx.globalAlpha=(x>=hd.loC&&x<=hd.hiC)?0.7:0.25;
+    ctx.fillRect(X(x/m)-bw/2,Y(pmf[x]),bw,h-pad.b-Y(pmf[x]));}ctx.globalAlpha=1;}
+  bars(pL,hdL,css('--pink'));bars(pH,hdH,css('--indigo'));
+  // HDI bars under axis
+  ctx.fillStyle=css('--indigo');ctx.fillRect(X(hdH.lo),pad.t-6,X(hdH.hi)-X(hdH.lo),3);
+  ctx.fillStyle=css('--pink');ctx.fillRect(X(hdL.lo),pad.t-1,X(hdL.hi)-X(hdL.lo),3);
+  const overlap=hdH.lo<=hdL.hi && hdL.lo<=hdH.hi;
+  const v=document.getElementById('d_verdict'),vt=document.getElementById('d_vtext');
+  v.className='verdict '+(overlap?'no':'yes');
+  vt.textContent=overlap?'NOT discriminable — the intervals overlap':'Discriminable — the intervals are separate';
+  d_detail.innerHTML=`High result 95% interval: <b>${fmt(hdH.lo)}–${fmt(hdH.hi)}</b> · Low result: <b>${fmt(hdL.lo)}–${fmt(hdL.hi)}</b>. `+
+    (overlap?`A reported rate in the overlap is consistent with <b>both</b> a high- and a low-replicability truth.`:
+     `Here the binary label “replicates / does not” carries real information.`);
+}
+[D.hi,D.lo,D.rho,D.m].forEach(e=>e.addEventListener('input',renderDisc));
+document.querySelectorAll('#disc .pre').forEach(b=>b.addEventListener('click',()=>{
+  const [r,m]=b.dataset.d.split(',');D.rho.value=r;D.m.value=m;renderDisc();
+  document.querySelectorAll('#disc .pre').forEach(x=>x.classList.remove('act'));b.classList.add('act');}));
+
+/* ============ SECTION 3: AGGREGATION ============ */
+let projA=[],projB=[];
+const PRE1={A:[{n:'Solid effects',mu:0.85,rho:0.05,k:50},{n:'Fragile effects',mu:0.15,rho:0.05,k:50}],
+            B:[{n:'Moderate, noisy',mu:0.50,rho:0.30,k:100}]};
+const PRE2={A:[{n:'Replicable lit.',mu:0.80,rho:0.10,k:37},{n:'False positives',mu:0.10,rho:0.10,k:63}],
+            B:[{n:'Uniformly weak',mu:0.36,rho:0.25,k:100}]};
+function buildTable(tbl,proj,which){
+  tbl.innerHTML='<tr><th>Result class</th><th>true μ</th><th>ρ</th><th>#studies</th></tr>';
+  proj.forEach((r,i)=>{const tr=document.createElement('tr');
+    tr.innerHTML=`<td>${r.n}</td>
+      <td><input type=range min=0.02 max=0.98 step=0.01 value=${r.mu}><div class=minival>${fmt(r.mu)}</div></td>
+      <td><input type=range min=0 max=0.5 step=0.01 value=${r.rho}><div class=minival>${fmt(r.rho)}</div></td>
+      <td><input type=range min=5 max=200 step=5 value=${r.k}><div class=minival>${r.k}</div></td>`;
+    const ins=tr.querySelectorAll('input');
+    ins[0].addEventListener('input',e=>{r.mu=+e.target.value;renderAgg();});
+    ins[1].addEventListener('input',e=>{r.rho=+e.target.value;renderAgg();});
+    ins[2].addEventListener('input',e=>{r.k=+e.target.value;renderAgg();});
+    tbl.appendChild(tr);});
+}
+function aggDist(proj){ // distribution of total successes / total m via convolution of class beta-binomials
+  let dist=[1];let M=0;
+  proj.forEach(r=>{const pmf=betaBinomPmf(r.k,r.mu,r.rho);const nd=new Array(dist.length+r.k).fill(0);
+    for(let i=0;i<dist.length;i++)for(let x=0;x<=r.k;x++)nd[i+x]+=dist[i]*pmf[x];dist=nd;M+=r.k;});
+  return{dist,M};}
+function renderAgg(){
+  [['A',projA,'A'],['B',projB,'B']].forEach(([id,proj])=>{
+    const exp=proj.reduce((s,r)=>s+r.mu*r.k,0)/proj.reduce((s,r)=>s+r.k,0);
+    const {dist,M}=aggDist(proj);
+    const hd=hdi(dist,M);
+    document.getElementById(id+'_head').childNodes[0].textContent=pct(exp);
+    document.getElementById(id+'_sub').textContent=`≈ ${Math.round(exp*M)} of ${M} studies`;
+    document.getElementById(id+'_exp').textContent=fmt(hd.lo)+'–'+fmt(hd.hi);
+    proj._dist=dist;proj._M=M;proj._exp=exp;
+    // refresh mini value labels
+    const tbl=document.getElementById(id+'_tbl');const rows=tbl.querySelectorAll('tr');
+    proj.forEach((r,i)=>{const vals=rows[i+1].querySelectorAll('.minival');vals[0].textContent=fmt(r.mu);vals[1].textContent=fmt(r.rho);vals[2].textContent=r.k;});
+  });
+  // overlay plot (on common 0..1 scale)
+  const {ctx,w,h}=setupCanvas(agg_dist,230);const pad={l:44,r:14,t:24,b:34};
+  ctx.clearRect(0,0,w,h);axes(ctx,w,h,pad,0,"Headline-rate distributions on the same scale");
+  function line(proj,col){const d=proj._dist,M=proj._M;const mx=Math.max(...d);
+    ctx.strokeStyle=col;ctx.lineWidth=2;ctx.beginPath();
+    for(let x=0;x<=M;x++){const X=pad.l+(w-pad.l-pad.r)*(x/M);const Y=h-pad.b-(h-pad.t-pad.b)*(d[x]/mx);x?ctx.lineTo(X,Y):ctx.moveTo(X,Y);}
+    ctx.stroke();const hd=hdi(d,M);ctx.fillStyle=col;ctx.globalAlpha=.5;
+    ctx.beginPath();ctx.arc(pad.l+(w-pad.l-pad.r)*proj._exp,pad.t+8,3,0,7);ctx.fill();ctx.globalAlpha=1;return hd;}
+  const hA=line(projA,css('--indigo')),hB=line(projB,css('--pink'));
+  const sameHead=document.getElementById('A_head').childNodes[0].textContent===document.getElementById('B_head').childNodes[0].textContent;
+  agg_punch.innerHTML=`Project A is built from ${projA.length} class${projA.length>1?'es':''} (expected ${pct(projA._exp)}), Project B from ${projB.length} (expected ${pct(projB._exp)}). `+
+    (Math.abs(projA._exp-projB._exp)<0.04
+      ? `<b>They report essentially the same headline rate from opposite underlying worlds.</b> The percentage is an average over a mixture — it tells you nothing about whether the science is mostly solid with a few false positives, or uniformly mediocre. <b>A headline % with no stated mixture is not a summary of the literature; it is a number with no fixed meaning.</b>`
+      : `Adjust the sliders so the two expected rates match — you will always be able to hit the same headline from very different compositions.`);
+}
+buildTable(A_tbl,projA);buildTable(B_tbl,projB);
+function loadPreset(P){projA.length=0;projB.length=0;P.A.forEach(r=>projA.push({...r}));P.B.forEach(r=>projB.push({...r}));
+  buildTable(A_tbl,projA);buildTable(B_tbl,projB);renderAgg();}
+agg_p1.addEventListener('click',()=>loadPreset(PRE1));
+agg_p2.addEventListener('click',()=>loadPreset(PRE2));
+loadPreset(PRE1);
+
+/* ============ SECTION 4: NON-IDENTIFIABILITY ============ */
+const I={mu:i_mu,ra:i_ra,rb:i_rb,m:i_m};
+function renderIdent(){
+  const mu=+I.mu.value,ra=+I.ra.value,rb=+I.rb.value,m=+I.m.value;
+  i_mu_v.textContent=fmt(mu);i_ra_v.textContent=fmt(ra);i_rb_v.textContent=fmt(rb);i_m_v.textContent=m;
+  // sample phi_i for each world
+  function world(rho){if(rho<=1e-6)return Array(m).fill(mu);const s=(1-rho)/rho;
+    return Array.from({length:m},()=>betaSample(mu*s,(1-mu)*s));}
+  const phiA=world(ra),phiB=world(rb);
+  // phi plot: two horizontal jittered strips
+  const {ctx,w,h}=setupCanvas(i_phi,150);const pad={l:90,r:14,t:14,b:26};
+  ctx.clearRect(0,0,w,h);ctx.strokeStyle=css('--line');ctx.beginPath();ctx.moveTo(pad.l,h-pad.b);ctx.lineTo(w-pad.r,h-pad.b);ctx.stroke();
+  ctx.fillStyle=css('--muted');ctx.font="12px -apple-system";ctx.textAlign="center";
+  for(let t=0;t<=1.0001;t+=0.25)ctx.fillText(t.toFixed(2),pad.l+(w-pad.l-pad.r)*t,h-pad.b+15);
+  ctx.fillText("per-study true replicability rate φᵢ",(pad.l+w-pad.r)/2,h-2);
+  ctx.textAlign="right";ctx.fillText("World A ρ="+fmt(ra),pad.l-8,38);ctx.fillText("World B ρ="+fmt(rb),pad.l-8,80);
+  function strip(phi,y,col){ctx.fillStyle=col;phi.forEach(p=>{const x=pad.l+(w-pad.l-pad.r)*p;
+    ctx.globalAlpha=.5;ctx.beginPath();ctx.arc(x,y+(rnd()-0.5)*20,3,0,7);ctx.fill();});ctx.globalAlpha=1;
+    ctx.strokeStyle=col;ctx.lineWidth=2;const mx=pad.l+(w-pad.l-pad.r)*mu;ctx.beginPath();ctx.moveTo(mx,y-13);ctx.lineTo(mx,y+13);ctx.stroke();}
+  strip(phiA,34,css('--indigo'));strip(phiB,74,css('--pink'));
+  // verdict distributions: exact = Bin(m,mu) for both (analytic), plus we overlay the two MC histograms
+  const {ctx:c2,w:w2,h:h2}=setupCanvas(i_verdict,200);const p2={l:44,r:14,t:22,b:34};
+  c2.clearRect(0,0,w2,h2);axes(c2,w2,h2,p2,0,"Distribution of “# replicated” verdicts — identical");
+  const binom=betaBinomPmf(m,mu,0);const mx=Math.max(...binom);
+  const X=t=>p2.l+(w2-p2.l-p2.r)*t,Y=p=>h2-p2.b-(h2-p2.t-p2.b)*(p/mx);const bw=Math.max(1,(w2-p2.l-p2.r)/(m+1)*0.8);
+  for(let x=0;x<=m;x++){c2.fillStyle=css('--muted');c2.globalAlpha=.18;c2.fillRect(X(x/m)-bw/2,Y(binom[x]),bw,h2-p2.b-Y(binom[x]));}
+  c2.globalAlpha=1;
+  i_punch.innerHTML=`Both worlds share μ=${fmt(mu)}, so each study’s verdict is a coin-flip with probability ${fmt(mu)} <i>regardless of ρ</i>. World A’s φ’s cluster at the mean; World B’s split toward 0 and 1. <b>The verdict counts are drawn from the very same distribution (grey).</b> From “1 replicated, 0 didn’t” verdicts alone there is no way to recover ρ — the heterogeneity that controls whether the rate means anything is invisible by construction.`;
+}
+[I.mu,I.ra,I.rb,I.m].forEach(e=>e.addEventListener('input',renderIdent));
+i_resim.addEventListener('click',()=>{_seed=(_seed*7+1)&0x7fffffff;renderIdent();});
+
+/* ============ SECTION 5: REAL ============ */
+function renderReal(){
+  // {name, m, reported binary rate (or null), diagnostic mu for the benchmark band (or null), rho, note}
+  const rows=[
+    {nm:"Reproducibility Project: Psychology",m:100,rate:0.36,mu:0.36,rho:0.10,src:"illustrative ρ"},
+    {nm:"Reproducibility Project: Psychology",m:100,rate:0.36,mu:0.36,rho:0.20,src:"illustrative ρ"},
+    {nm:"SCORE (Tyner et al.)",m:274,rate:null,mu:null,rho:0.10,src:"illustrative ρ"},
+    {nm:"Many Labs 4",m:17,rate:1/17,mu:0.565,rho:0.175,src:"paper’s aux. estimate"},
+    {nm:"Many Labs 4",m:17,rate:1/17,mu:0.565,rho:0.373,src:"paper’s aux. estimate"}];
+  let html="<tr><th>Project</th><th>m</th><th>reported rate</th><th>diagnostic μ</th><th>ρ</th><th>effective mₑ</th><th>95% HDI of X/m at (μ,ρ)</th></tr>";
+  rows.forEach(({nm,m,rate,mu,rho,src})=>{
+    const meV=me(m,rho);const band=mu!=null?(()=>{const hd=hdi(betaBinomPmf(m,mu,rho),m);return fmt(hd.lo)+'–'+fmt(hd.hi);})():'—';
+    html+=`<tr><td>${nm}</td><td>${m}</td><td>${rate!=null?pct(rate):'—'}</td><td>${mu!=null?fmt(mu):'—'}</td><td>${fmt(rho)} <span class=hint>${src}</span></td>
+      <td class=warn>${fmt(meV,1)}</td><td>${band}</td></tr>`;});
+  real_tbl.innerHTML=html;
+}
+renderReal();
+
+/* ============ SECTION 6: STRESS MAP ============ */
+const S={m:s_m};
+function renderStress(){
+  const m=+S.m.value;s_m_v.textContent=m;
+  const {ctx,w,h}=setupCanvas(s_map,300);const pad={l:46,r:14,t:14,b:40};
+  ctx.clearRect(0,0,w,h);
+  const muN=48,rhoN=40;const plotW=w-pad.l-pad.r,plotH=h-pad.t-pad.b;
+  let sepCount=0,tot=0;
+  for(let i=0;i<muN;i++){const mu=0.5+0.49*(i+0.5)/muN; // high side 0.5..0.99 ; mirror is 1-mu
+    for(let j=0;j<rhoN;j++){const rho=0.5*(j+0.5)/rhoN;
+      const hH=hdi(betaBinomPmf(m,mu,rho),m),hL=hdi(betaBinomPmf(m,1-mu,rho),m);
+      const sep=!(hH.lo<=hL.hi&&hL.lo<=hH.hi);tot++;if(sep)sepCount++;
+      ctx.fillStyle=sep?css('--good'):'#d9d2c6';ctx.globalAlpha=sep?0.85:0.6;
+      const x=pad.l+plotW*(i/muN),y=pad.t+plotH*(1-(j+1)/rhoN);
+      ctx.fillRect(x,y,plotW/muN+0.6,plotH/rhoN+0.6);}}
+  ctx.globalAlpha=1;
+  ctx.strokeStyle=css('--line');ctx.strokeRect(pad.l,pad.t,plotW,plotH);
+  ctx.fillStyle=css('--muted');ctx.font="12px -apple-system";ctx.textAlign="center";
+  for(let t=0;t<=1.0001;t+=0.25)ctx.fillText((0.5+0.5*t).toFixed(2),pad.l+plotW*t,h-pad.b+16);
+  ctx.fillText("result strength μ (vs its mirror 1−μ)  →",(pad.l+w-pad.r)/2,h-4);
+  ctx.save();ctx.translate(14,pad.t+plotH/2);ctx.rotate(-Math.PI/2);ctx.fillText("heterogeneity ρ  →",0,0);ctx.restore();
+  ctx.textAlign="right";for(let t=0;t<=1.0001;t+=0.25)ctx.fillText((0.5*t).toFixed(2),pad.l-6,pad.t+plotH*(1-t)+4);
+  s_summary.innerHTML=`At m=${m}, a result is separable from its mirror in <b>${pct(sepCount/tot)}</b> of the μ–ρ grid. `+
+    `Separation survives only for <b>extreme μ at low ρ</b> (top-left to bottom-right is mostly grey). `+
+    `Increasing m barely moves the boundary once ρ>0 — try it.`;
+}
+S.m.addEventListener('input',renderStress);
+
+document.getElementById('answer').innerHTML=`
+<p><b>Short answer: an X% replication rate is informative only under conditions that real large-scale projects do not meet, and — crucially — you cannot check from the rate whether those conditions hold.</b></p>
+<p>Three things have to be true for the percentage to mean something:</p>
+<ol>
+<li><b>Low heterogeneity (ρ near 0).</b> Otherwise the reported rate has an irreducible uncertainty floor (Section 1): 274 SCORE studies carry the information of ~10. The rate is far noisier than the headcount implies.</li>
+<li><b>ρ must be known.</b> It isn’t, and can’t be — one binary verdict per study makes ρ mathematically non-identifiable (Section 4). You literally cannot tell a homogeneous literature from a wildly heterogeneous one from the verdicts.</li>
+<li><b>A stated, homogeneous target.</b> A project-wide % averages over a mixture of unrelated results (Section 3). The same 36% is consistent with “mostly solid science plus some false positives” and with “uniformly mediocre science.” Without specifying the mixture and a base rate of true effects to compare against, there is no “expected rate” the observed one is high or low relative to.</li>
+</ol>
+<p><b>So is it meaningless?</b> Not quite — that would overclaim. The rate <i>does</i> carry information when μ is extreme and ρ is genuinely small (Section 6’s green region), and an extreme observed rate still loosely bounds the truth. And replication remains valuable for what it was always good for: estimating effect <i>sizes</i>, calibrating measures, mapping context-sensitivity. Richer data (continuous effect sizes, k&gt;1 exact replications) <i>can</i> recover ρ — and when ML4’s continuous data is used, ρ turns out to be large.</p>
+<p><b>What is unwarranted</b> is using a project-wide replication <i>percentage</i> as a verdict on a field — “the literature is X% trustworthy,” “there is/ isn’t a crisis.” That demarcation is the one job the number cannot do, because the quantity that decides whether it can (ρ) is invisible in the data that produced it. <i>The crisis, if there is one, cannot be established by the methods used to declare it.</i></p>
+<h3 style="font-size:18px;margin:22px 0 6px">Where this argument is contested</h3>
+<p>The artifact gives the paper its strongest form. An adversarial review (run on this build) finds the <b>narrow</b> claims hold but the <b>broad</b> thesis is debatable — worth flagging for a colleague:</p>
+<ul>
+<li><b>It targets a lossy summary.</b> The non-identifiability is exact for <i>one bit per study</i>, but real projects record effect sizes, CIs, and sites — and the paper itself recovers ρ from ML4’s continuous data. The lesson is arguably “don’t discard the continuous data,” not “replication can’t detect problems.”</li>
+<li><b>The floor is model-specific.</b> The irreducible floor lives in the <i>benchmark</i> (shared-latent) model. Under the <i>operational</i> model the mean rate is estimable and shrinks like 1/m — the paper uses whichever model is more damaging for each point.</li>
+<li><b>“Uninterpretable” may be too strong.</b> Mixture averages (unemployment, mortality) are decision-useful when the population and estimand are stated. The fair charge is that a replication rate is <i>composition-dependent</i>, not that it is meaningless.</li>
+<li><b>Imperfect demarcation ≠ no signal.</b> A 36% rate alongside smaller replication effects, sign flips, and publication-bias evidence can still rationally update beliefs about a literature, even if it can’t cleanly classify each result.</li>
+</ul>
+<p>Net: the paper decisively undercuts treating a headline replication <i>percentage</i> as a verdict or crisis-detector. It does <i>not</i> show that replication evidence carries no signal about fragile literatures. That distinction is the honest answer to your question.</p>`;
+
+/* ============ SECTION 7: COIN PURSE ============ */
+const CO={mu:co_mu,rig:co_rig,n:co_n};
+function renderCoin(){
+  const mu=+CO.mu.value,rig=+CO.rig.value,hand=+CO.n.value;
+  co_mu_v.textContent=fmt(mu);co_rig_v.textContent=fmt(rig);co_n_v.textContent=hand;
+  const N=26;
+  // hidden bias: phi = mu*(1-rig) + rig*Bernoulli(mu)  -> mean stays exactly mu
+  const purse=rg=>Array.from({length:N},()=>{const b=rnd()<mu?1:0;return mu*(1-rg)+rg*b;});
+  const A=purse(rig),B=purse(0);
+  const flip=phi=>rnd()<phi?1:0;
+  const fA=A.map(flip),fB=B.map(flip);
+  const hA=fA.reduce((s,x)=>s+x,0),hB=fB.reduce((s,x)=>s+x,0);
+  const {ctx,w,h}=setupCanvas(co_view,220);const pad={l:96,r:16,t:14,b:26};const plotW=w-pad.l-pad.r;
+  ctx.clearRect(0,0,w,h);
+  ctx.strokeStyle=css('--line');ctx.beginPath();ctx.moveTo(pad.l,h-pad.b);ctx.lineTo(w-pad.r,h-pad.b);ctx.stroke();
+  ctx.fillStyle=css('--muted');ctx.font="12px -apple-system";ctx.textAlign="center";
+  for(let t=0;t<=1.0001;t+=0.25)ctx.fillText(t.toFixed(2),pad.l+plotW*t,h-pad.b+15);
+  ctx.fillText("hidden bias φ  (chance this coin lands heads)",(pad.l+w-pad.r)/2,h-2);
+  function lane(coins,flips,y,label){
+    ctx.fillStyle=css('--ink');ctx.font="13px -apple-system";ctx.textAlign="right";ctx.fillText(label,pad.l-10,y+4);
+    const mx=pad.l+plotW*mu;ctx.strokeStyle=css('--amber');ctx.globalAlpha=.4;ctx.setLineDash([4,3]);
+    ctx.beginPath();ctx.moveTo(mx,y-22);ctx.lineTo(mx,y+22);ctx.stroke();ctx.setLineDash([]);ctx.globalAlpha=1;
+    coins.forEach((p,i)=>{const x=pad.l+plotW*p;const yy=y+((i%5)-2)*7;ctx.beginPath();ctx.arc(x,yy,4.4,0,7);
+      if(flips[i]){ctx.fillStyle=css('--amber');ctx.fill();}else{ctx.strokeStyle=css('--amber');ctx.lineWidth=1.4;ctx.stroke();}});
+  }
+  lane(A,fA,pad.t+34,"Rigged");lane(B,fB,pad.t+118,mu===0.5?"Fair":"Identical");
+  co_avg.innerHTML=pct(mu)+' <small>both purses</small>';
+  co_exp.innerHTML=fmt(mu*hand,1)+' <small>of '+hand+', either purse</small>';
+  co_ha.textContent=hA+' / '+N;co_hb.textContent=hB+' / '+N;
+  co_punch.innerHTML=`Both purses average <b>${pct(mu)}</b> heads, so a handful of ${hand} gives ~<b>${fmt(mu*hand,1)}</b> heads either way — your point: the <b>aggregate is perfectly knowable</b>. But look at the coins. In the rigged purse every coin is φ=0 or φ=1: <b>no coin is actually a ${pct(mu)} coin</b>, so “${pct(mu)}” predicts no individual coin at all. And from the filled/hollow flips alone — the only thing a replication project records — the two purses are <b>statistically indistinguishable</b>: both heads-counts are draws from the very same Binomial(${N}, ${fmt(mu)}). Hit “Flip again” and watch them trade places. Same rate, same slips, opposite worlds.`;
+}
+[CO.mu,CO.rig,CO.n].forEach(e=>e.addEventListener('input',renderCoin));
+co_flip.addEventListener('click',()=>{_seed=(_seed*7+3)&0x7fffffff;renderCoin();});
+
+/* ============ SECTION 8: WHERE 36% COMES FROM ============ */
+const RR={pi:rr_pi,w0:rr_w0,wr:rr_wr,a:rr_a};
+function renderRep(){
+  const pi=+RR.pi.value,w0=+RR.w0.value,wr=+RR.wr.value,a=+RR.a.value;
+  rr_pi_v.textContent=fmt(pi);rr_w0_v.textContent=fmt(w0);rr_wr_v.textContent=fmt(wr);rr_a_v.textContent=fmt(a);
+  const T=pi*w0,Fp=(1-pi)*a,PPV=T/(T+Fp);const fr=a/2; // false positive re-significant, same direction
+  const realRep=PPV*wr,falseRep=(1-PPV)*fr,realFail=PPV*(1-wr),falseFail=(1-PPV)*(1-fr);
+  const R=realRep+falseRep;
+  rr_R.childNodes[0].textContent=pct(R);
+  rr_ppv.textContent=pct(PPV);
+  // stacked bar: replicated (realRep, falseRep) | not (realFail, falseFail)
+  const {ctx,w,h}=setupCanvas(rr_bar,96);const pad={l:16,r:16,t:30,b:24};const barW=w-pad.l-pad.r,y=pad.t,bh=30;
+  ctx.clearRect(0,0,w,h);
+  const segs=[[realRep,css('--good')],[falseRep,css('--bad')],[realFail,css('--amber-soft')],[falseFail,'#d9d2c6']];
+  let x=pad.l;segs.forEach(([v,c])=>{ctx.fillStyle=c;ctx.fillRect(x,y,barW*v,bh);x+=barW*v;});
+  // divider at R (boundary between replicated and not)
+  const xR=pad.l+barW*R;ctx.strokeStyle=css('--ink');ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(xR,y-8);ctx.lineTo(xR,y+bh+8);ctx.stroke();
+  ctx.fillStyle=css('--ink');ctx.font="bold 13px -apple-system";ctx.textAlign="center";
+  ctx.fillText("← replicated: "+pct(R),Math.min(xR-4,barW*0.5+pad.l),y-13);
+  ctx.font="12px -apple-system";ctx.textAlign="left";ctx.fillStyle=css('--muted');
+  ctx.fillText("of every 100 published findings",pad.l,y+bh+18);
+  rr_punch.innerHTML=`Here, <b>${pct(PPV)}</b> of the published findings are genuinely real, and the project replicates <b>${pct(R)}</b> of them. `+
+    (PPV>0.7
+      ? `Almost nothing here is a false positive — the literature is <b>solid</b> — yet it still replicates at ${pct(R)}, purely because the replications run at ${pct(wr)} power for the true effects. <b>Real findings, weak verdict instrument.</b> This is how a sound literature posts a low rate.`
+      : PPV<0.5
+      ? `Most published findings are <b>false positives</b> that correctly fail to replicate. The low rate reflects a low base rate of true effects (${pct(pi)}) filtered through significance — not necessarily sloppy replication.`
+      : `A mix of real and false findings. Crucially, <b>the same ${pct(R)} rate appears at very different PPVs</b> — slide the base rate and replication power against each other and watch R stay put while the meaning flips entirely.`)+
+    ` The reported rate alone cannot tell you which world you are in.`;
+}
+[RR.pi,RR.w0,RR.wr,RR.a].forEach(e=>e.addEventListener('input',renderRep));
+rr_sick.addEventListener('click',()=>{RR.pi.value=0.04;RR.w0.value=0.80;RR.wr.value=0.90;RR.a.value=0.05;renderRep();});
+rr_solid.addEventListener('click',()=>{RR.pi.value=0.70;RR.w0.value=0.80;RR.wr.value=0.38;RR.a.value=0.05;renderRep();});
+
+/* init */
+function renderAll(){renderFloor();renderDisc();renderAgg();renderIdent();renderStress();renderCoin();renderRep();}
+renderAll();
+window.addEventListener('resize',()=>{clearTimeout(window._rt);window._rt=setTimeout(renderAll,150);});
+
+/* ============ SECTION 7: VALIDATION (computed live) ============ */
+function vrow(label,paper,got,ok){return `<tr><td>${label}</td><td>${paper}</td><td>${got}</td>
+  <td class="${ok?'ok':'warn'}">${ok?'✓ match':'≈ (boundary)'}</td></tr>`;}
+function near(a,b,t=0.011){return Math.abs(a-b)<=t;}
+let vt="<tr><th>Quantity</th><th>Paper</th><th>Computed here</th><th></th></tr>";
+{const v=me(100,0.1);vt+=vrow("mₑ — RPP (m=100, ρ=0.10)","≈9",fmt(v,2),near(v,9.17));}
+{const v=me(100,0.2);vt+=vrow("mₑ — RPP (m=100, ρ=0.20)","≈5",fmt(v,2),near(v,4.81));}
+{const v=me(274,0.1);vt+=vrow("mₑ — SCORE (m=274, ρ=0.10)","≈10",fmt(v,2),near(v,9.68));}
+{const hd=hdi(betaBinomPmf(50,0.8,0),50);vt+=vrow("Fig 1A HDI: μ=0.8, ρ=0, m=50","0.70–0.90",fmt(hd.lo)+"–"+fmt(hd.hi),near(hd.lo,0.7)&&near(hd.hi,0.9));}
+{const hd=hdi(betaBinomPmf(50,0.2,0),50);vt+=vrow("Fig 1A HDI: μ=0.2, ρ=0, m=50","0.10–0.30",fmt(hd.lo)+"–"+fmt(hd.hi),near(hd.lo,0.1)&&near(hd.hi,0.3));}
+{const hd=hdi(betaBinomPmf(17,0.565,0.175),17);vt+=vrow("ML4 band: μ=0.565, ρ=0.175, m=17","0.12–0.94",fmt(hd.lo)+"–"+fmt(hd.hi),near(hd.lo,0.118)&&near(hd.hi,0.941));}
+{const hd=hdi(betaBinomPmf(17,0.852,0.175),17);vt+=vrow("ML4 sep. pair high: μ=0.852","0.529–1.00",fmt(hd.lo)+"–"+fmt(hd.hi),near(hd.lo,0.529)&&near(hd.hi,1));}
+{const hd=hdi(betaBinomPmf(17,0.148,0.175),17);vt+=vrow("ML4 sep. pair low: μ=0.148","0.00–0.471",fmt(hd.lo)+"–"+fmt(hd.hi),near(hd.lo,0)&&near(hd.hi,0.471));}
+{const v=normCdf(1/Math.sqrt(1.25));vt+=vrow("Mechanism map μ=Φ(θ/√(SE²+σ²)), θ=1,σ=0.5","0.814",fmt(v,3),near(v,0.814,0.002));}
+{const hd=hdi(betaBinomPmf(50,0.8,0.15),50);vt+=vrow("Fig 1 HDI: μ=0.8, ρ=0.15, m=50","0.46–1.00",fmt(hd.lo)+"–"+fmt(hd.hi),false);}
+valid_tbl.innerHTML=vt;
+</script>
+</body>
+</html>
