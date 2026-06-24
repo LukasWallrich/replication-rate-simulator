@@ -3,6 +3,8 @@
 An interactive, single-file simulation of the argument in **Devezer & Buzbas (2026),
 *"The Difference Between 'Replicable' and 'Not replicable' is not Itself Scientifically Replicable"*** ([arXiv:2604.26268](https://arxiv.org/abs/2604.26268)).
 
+> **Beware:** co-generated with Claude Code and Codex, for personal exploration. Not fully reviewed.
+
 👉 **Live page:** see the GitHub Pages link in the repo's *About* / Settings → Pages.
 
 Move the sliders and watch when a reported replication percentage carries information about the
