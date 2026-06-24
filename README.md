@@ -27,7 +27,7 @@ The whole thing is one self-contained `index.html` — no dependencies, no build
 
 ## Caveats
 
-The artifact gives the paper its strongest form and then flags, in section 6, where the broad thesis is
+The artefact gives the paper its strongest form and then flags, in section 6, where the broad thesis is
 contested (the variance floor is benchmark-model-specific; richer continuous data can recover ρ; a mixture
 average is composition-dependent rather than meaningless). See that section for the balanced reading.
 

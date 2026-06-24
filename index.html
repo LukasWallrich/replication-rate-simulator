@@ -28,7 +28,7 @@
   nav.toc .wrap{display:flex;gap:6px;flex-wrap:wrap;font-size:13px}
   nav.toc a{color:var(--muted);text-decoration:none;padding:4px 10px;border-radius:99px;white-space:nowrap}
   nav.toc a:hover{background:var(--amber-fill);color:var(--amber)}
-  section{padding:46px 0;border-bottom:1px solid var(--line)}
+  section{padding:46px 0;border-bottom:1px solid var(--line);scroll-margin-top:54px}
   section>.wrap>h2{font-size:27px;margin:0 0 6px}
   .lede{color:var(--muted);max-width:780px;margin:.2em 0 1.4em;font-size:16.5px}
   .secnum{color:var(--amber);font-size:15px;font-weight:700;margin-right:.5em;font-family:Georgia,serif}
@@ -101,8 +101,8 @@
   <h1>Is an “X% replication rate” insightful or meaningless?</h1>
   <p>A live simulation of the argument in Devezer &amp; Buzbas (2026), <i>“The Difference Between
   ‘Replicable’ and ‘Not replicable’ is not Itself Scientifically Replicable.”</i> Move the sliders
-  and watch when a reported replication percentage carries information about the underlying science —
-  and when it cannot, no matter how many studies you run.</p>
+  and watch when a reported replication percentage carries information about the underlying science,
+  and when it cannot tell a healthy literature from a broken one however many studies you run.</p>
   <div class="src">arXiv:2604.26268v1 · benchmark model (Eq. 1–2), operational model (Eq. 3–4),
   Many Labs 4 reanalysis. Paper-badged sections compute the paper’s own formulas in your browser; beyond-paper sections use separate, clearly-labelled illustrative models.</div>
   <div class="key">
@@ -114,7 +114,7 @@
 <nav class="toc"><div class="wrap">
   <a href="#floor">1 · Variance floor</a>
   <a href="#disc">2 · Discriminability</a>
-  <a href="#agg">3 · The headline rate ★</a>
+  <a href="#agg">3 · The headline rate</a>
   <a href="#ident">4 · Why ρ is invisible</a>
   <a href="#real">5 · Real projects</a>
   <a href="#stress">6 · Stress test</a>
@@ -201,7 +201,7 @@
 
 <!-- ============ SECTION 3: AGGREGATION (CENTERPIECE) ============ -->
 <section id="agg"><div class="wrap">
-  <h2><span class="secnum">3</span>The headline rate across a project <span class="badge paper">Paper’s argument · examples illustrative</span> <span class="tag">your question</span></h2>
+  <h2><span class="secnum">3</span>The headline rate across a project <span class="badge paper">Paper’s argument · examples illustrative</span> <span class="tag">the core question</span></h2>
   <p class="lede">A large project samples results from different literatures — different effect sizes, different
   replication conditions — and collapses them into one number. Below are two projects built from completely
   different mixtures of results. Tune them to the <b>same headline %</b>, then ask: what did that number tell you?</p>
@@ -272,10 +272,10 @@
   <i>m</i><sub>e</sub> = <i>m</i> / [1+(<i>m</i>−1)<i>ρ</i>]. For RPP and SCORE the ρ values are <i>illustrative</i> (Box 3 of the paper
   uses ρ ≈ 0.1–0.2 as examples); for ML4 they are the paper’s own auxiliary-model estimates. The right-hand band is
   the benchmark-model sampling interval for the reported rate <i>X/m</i> at the stated (μ, ρ) — not a confidence interval inferred from the headline.</p>
-  <div class="card" style="padding:6px 6px"><table class="valtable" id="real_tbl"></table></div>
+  <div class="card" style="padding:6px 6px;overflow-x:auto"><table class="valtable" id="real_tbl"></table></div>
   <p class="note" style="margin-top:14px">For ML4 the binary headline (“1 of 17 replicated”, ≈6%) and the
   <b>diagnostic mean μ = 0.565</b> are different things: the latter comes from the paper’s continuous effect-size
-  (auxiliary) model and is what the paper uses to locate ML4 on the heterogeneity landscape. At that μ and ρ = 0.175,
+  (auxiliary) model and is what the paper uses to place ML4 on its heterogeneity scale. At that μ and ρ = 0.175,
   the benchmark sampling interval for <i>X/m</i> spans <b>0.12–0.94</b> — nearly the whole scale — and the 17 sites
   carry the weight of only ~2–5 exact replications.</p>
 </div></section>
@@ -296,7 +296,7 @@
       <div class="legend"><span><i class="swatch" style="background:var(--good)"></i>Separable (informative)</span>
         <span><i class="swatch" style="background:#d9d2c6"></i>Overlapping (uninformative)</span></div></div>
   </div>
-  <details><summary>The bottom line — read this for the direct answer to your question</summary>
+  <details><summary>The bottom line — read this for the direct answer</summary>
     <div id="answer" style="margin-top:10px"></div></details>
 </div></section>
 
@@ -438,7 +438,7 @@
   <h2><span class="secnum">10</span>Validation against the paper</h2>
   <p class="lede">Durable correctness check: the engine’s output vs. the numbers printed in the paper.
   Computed live, in this page.</p>
-  <div class="card" style="padding:6px 6px"><table class="valtable" id="valid_tbl"></table></div>
+  <div class="card" style="padding:6px 6px;overflow-x:auto"><table class="valtable" id="valid_tbl"></table></div>
 </div></section>
 
 <footer><div class="wrap">
@@ -711,7 +711,7 @@ function renderStress(){
 S.m.addEventListener('input',renderStress);
 
 document.getElementById('answer').innerHTML=`
-<p><b>Short answer: an X% replication rate is informative only under conditions that real large-scale projects do not meet, and — crucially — you cannot check from the rate whether those conditions hold.</b></p>
+<p><b>Short answer: an X% replication rate is informative only under conditions that real large-scale projects do not meet, and you cannot check from the rate whether those conditions hold.</b></p>
 <p>Three things have to be true for the percentage to mean something:</p>
 <ol>
 <li><b>Low heterogeneity (ρ near 0)</b> — at least where the rate is read as one result’s shared replicability. Under that benchmark reading, heterogeneity imposes a precision floor that more studies can’t remove (§1). For a project averaging many <i>distinct</i> results, the mean is estimable instead (§9) — so this condition binds single-result claims more than the headline average.</li>
@@ -721,7 +721,7 @@ document.getElementById('answer').innerHTML=`
 <p><b>So is it meaningless?</b> Not quite — that would overclaim. The rate <i>does</i> carry information when μ is extreme and ρ is genuinely small (Section 6’s green region), and an extreme observed rate still loosely bounds the truth. And replication remains valuable for what it was always good for: estimating effect <i>sizes</i>, calibrating measures, mapping context-sensitivity. Richer data (continuous effect sizes, k&gt;1 exact replications) <i>can</i> recover ρ — and when ML4’s continuous data is used, ρ turns out to be large.</p>
 <p><b>What is unwarranted</b> is using a project-wide replication <i>percentage</i> as a verdict on a field — “the literature is X% trustworthy,” “there is/ isn’t a crisis.” That demarcation is the one job the number cannot do, because the quantity that decides whether it can (ρ) is invisible in the data that produced it. <i>The crisis, if there is one, cannot be established by the methods used to declare it.</i></p>
 <h3 style="font-size:18px;margin:22px 0 6px">Where this argument is contested</h3>
-<p>The artifact gives the paper its strongest form. Its <b>narrow</b> claims hold; the <b>broad</b> thesis is debatable on several fronts:</p>
+<p>This page gives the paper its strongest form. Its <b>narrow</b> claims hold; the <b>broad</b> thesis is debatable on several fronts:</p>
 <ul>
 <li><b>It targets a lossy summary.</b> The non-identifiability is exact for <i>one bit per study</i>, but real projects record effect sizes, CIs, and sites — and the paper itself recovers ρ from ML4’s continuous data. The lesson is arguably “don’t discard the continuous data,” not “replication can’t detect problems.”</li>
 <li><b>The floor is model-specific.</b> The irreducible floor lives in the <i>benchmark</i> (shared-latent) model; under the <i>operational</i> model the mean rate is estimable and shrinks like 1/m. For projects that replicate many distinct results once, the operational reading fits — §9 works this through.</li>
@@ -759,7 +759,7 @@ function renderCoin(){
   co_avg.innerHTML=pct(mu)+' <small>both purses</small>';
   co_exp.innerHTML=fmt(mu*hand,1)+' <small>of '+hand+', either purse</small>';
   co_ha.textContent=hA+' / '+N;co_hb.textContent=hB+' / '+N;
-  co_punch.innerHTML=`Both purses average <b>${pct(mu)}</b> heads, so a handful of ${hand} gives ~<b>${fmt(mu*hand,1)}</b> heads either way — your point: the <b>aggregate is perfectly knowable</b>. But look at the coins. In the rigged purse every coin is φ=0 or φ=1: <b>no coin is actually a ${pct(mu)} coin</b>, so “${pct(mu)}” predicts no individual coin at all. And from the filled/hollow flips alone — the only thing a replication project records — the two purses are <b>statistically indistinguishable</b>: both heads-counts are draws from the very same Binomial(${N}, ${fmt(mu)}). Hit “Flip again” and watch them trade places. Same rate, same slips, opposite worlds.`;
+  co_punch.innerHTML=`Both purses average <b>${pct(mu)}</b> heads, so a handful of ${hand} gives ~<b>${fmt(mu*hand,1)}</b> heads either way: the <b>aggregate is perfectly knowable</b>. But look at the coins. In the rigged purse every coin is φ=0 or φ=1: <b>no coin is actually a ${pct(mu)} coin</b>, so “${pct(mu)}” predicts no individual coin at all. And from the filled/hollow flips alone — the only thing a replication project records — the two purses are <b>statistically indistinguishable</b>: both heads-counts are draws from the very same Binomial(${N}, ${fmt(mu)}). Hit “Flip again” and watch them trade places. Same rate, same slips, opposite worlds.`;
 }
 [CO.mu,CO.rig,CO.n].forEach(e=>e.addEventListener('input',renderCoin));
 co_flip.addEventListener('click',()=>{_seed=(_seed*7+3)&0x7fffffff;renderCoin();});
