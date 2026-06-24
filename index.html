@@ -133,7 +133,11 @@
   <p class="note" style="margin:-10px 0 18px">This is the paper’s <b>benchmark model</b>: it assumes the <i>m</i> studies share one latent
   replicability rate (exchangeable) and that a value of <i>ρ</i> is known or imported. The panel then shows the sampling
   distribution of <i>X/m</i> under that assumption. It is a diagnostic of what a given <i>ρ</i> would imply — not a claim
-  that raw one-verdict-per-study data reveal this shape (under the operational model of §4 the observed counts look like a plain Binomial).</p>
+  that raw one-verdict-per-study data reveal this shape (under the operational model of §4 the observed counts look like a plain Binomial).
+  <br><b>Intuition for the floor:</b> the benchmark model is like flipping <i>one</i> randomly-drawn coin <i>m</i> times — more flips
+  pin down that coin, but it’s still a single draw from the purse, so your estimate of the average bias stays a fixed distance
+  (the floor) from the truth. The operational model is like flipping <i>many</i> coins once each, where the average <i>does</i> converge.
+  To beat the floor you need more coins, not more flips.</p>
   <div class="row2">
     <div class="card controls">
       <div class="ctl"><div class="lab"><b>True mean replicability μ</b><span class="val" id="f_mu_v">0.50</span></div>
@@ -333,24 +337,28 @@
 <!-- ============ SECTION 8: WHERE 36% COMES FROM ============ -->
 <section id="reprate"><div class="wrap">
   <h2><span class="secnum">8</span>Where does a replication rate come from?<span class="badge ext">Beyond the paper · a complementary argument</span></h2>
-  <p class="lede">How a <b>careful</b> literature can still replicate at 36%. Each tested hypothesis is a true effect
-  with some probability — the <b>base rate</b>. Only significant originals get published, so the pool that gets
-  replicated is a mix of real effects and false positives. The rate that comes out confounds base rate, statistical
-  power, and effect heterogeneity — which is why the number alone can’t grade a field.</p>
-  <p class="note" style="margin:-8px 0 18px">This base-rate model is a separate, classic argument (Ioannidis-style), <b>not</b> part of Devezer &amp; Buzbas. It complements them: it shows how a low rate <i>can</i> arise, while the paper explains why the rate <i>can’t be interpreted</i> as a verdict.</p>
-  <div class="presets" style="margin-bottom:14px"><span class="hint">Two roads to ~36%:</span>
-    <button class="pre" id="rr_sick">“Sick”: mostly false positives</button>
-    <button class="pre" id="rr_solid">“Solid” but underpowered replications</button></div>
+  <p class="lede">What a replication rate actually tracks. Each tested hypothesis is a true effect with some probability
+  — the <b>base rate</b>. Only significant originals get published, so the pool that gets replicated is a mix of real
+  effects and false positives, and its quality (the share that are real, <b>PPV</b>) is set by <i>literature</i>
+  properties: the base rate and how rigorously the originals were run. <b>If you power the replications well</b>
+  (e.g. to a SESOI — a choice <i>you</i> control), the rate ends up tracking PPV closely — so it does carry
+  information about the share of real findings. What it still can’t separate are two different <i>literatures</i>
+  behind the same PPV.</p>
+  <p class="note" style="margin:-8px 0 18px">This base-rate model is a separate, classic argument (Ioannidis-style), <b>not</b> part of Devezer &amp; Buzbas. It complements them: it shows what a rate <i>does</i> track, while the paper explains the limits of reading it as a verdict. Note this model has <b>no effect heterogeneity</b> (every real effect replicates at the same power) — the spread/ρ story is §§1&amp;4.</p>
+  <div class="presets" style="margin-bottom:14px"><span class="hint">Two literatures, same rate (both well-powered replications):</span>
+    <button class="pre" id="rr_sick">Real effects rare, field rigorous</button>
+    <button class="pre" id="rr_solid">Real effects common, originals underpowered</button></div>
   <div class="row2">
     <div class="card controls">
       <div class="ctl"><div class="lab"><b>Base rate of true effects π</b><span class="val" id="rr_pi_v">0.30</span></div>
         <input type="range" id="rr_pi" min="0.01" max="0.95" step="0.01" value="0.3">
-        <div class="hint">Fraction of tested hypotheses that are genuinely real.</div></div>
+        <div class="hint">Fraction of tested hypotheses that are genuinely real. <b>A property of the literature.</b> Drag it and watch the rate move.</div></div>
       <div class="ctl"><div class="lab"><b>Original-study power</b><span class="val" id="rr_w0_v">0.80</span></div>
-        <input type="range" id="rr_w0" min="0.1" max="0.99" step="0.01" value="0.8"></div>
-      <div class="ctl"><div class="lab"><b>Replication power</b><span class="val" id="rr_wr_v">0.90</span></div>
+        <input type="range" id="rr_w0" min="0.1" max="0.99" step="0.01" value="0.8">
+        <div class="hint">How rigorously the originals were run. Low power ⇒ more flukes/inflated effects get published. <b>Also a property of the literature.</b></div></div>
+      <div class="ctl"><div class="lab"><b>Replication power <span style="color:var(--indigo)">(you control this)</span></b><span class="val" id="rr_wr_v">0.90</span></div>
         <input type="range" id="rr_wr" min="0.1" max="0.99" step="0.01" value="0.9">
-        <div class="hint">How likely a <i>real</i> effect reaches significance again. Low = small samples, shrinking effects, or effects that don’t transfer to the new context (a separate knob here, though such context-sensitivity is one source of the paper’s ρ).</div></div>
+        <div class="hint">A <i>design</i> choice, not a field property: power to a SESOI ⇒ high. Dragging it <i>down</i> deflates the rate regardless of the literature — that’s a flaw in the replication project, not evidence about the field. Keep it high.</div></div>
       <div class="ctl"><div class="lab"><b>Error rate α</b><span class="val" id="rr_a_v">0.05</span></div>
         <input type="range" id="rr_a" min="0.01" max="0.2" step="0.01" value="0.05"></div>
     </div>
@@ -721,17 +729,18 @@ function renderRep(){
   ctx.fillText("← replicated: "+pct(R),Math.min(xR-4,barW*0.5+pad.l),y-13);
   ctx.font="12px -apple-system";ctx.textAlign="left";ctx.fillStyle=css('--muted');
   ctx.fillText("of every 100 published findings",pad.l,y+bh+18);
-  rr_punch.innerHTML=`Here, <b>${pct(PPV)}</b> of the published findings are genuinely real, and the project replicates <b>${pct(R)}</b> of them. `+
-    (PPV>0.7
-      ? `Almost nothing here is a false positive — the literature is <b>solid</b> — yet it still replicates at ${pct(R)}, purely because the replications run at ${pct(wr)} power for the true effects. <b>Real findings, weak verdict instrument.</b> This is how a sound literature posts a low rate.`
-      : PPV<0.5
-      ? `Most published findings are <b>false positives</b> that correctly fail to replicate. The low rate reflects a low base rate of true effects (${pct(pi)}) filtered through significance — not necessarily sloppy replication.`
-      : `A mix of real and false findings. Crucially, <b>the same ${pct(R)} rate appears at very different PPVs</b> — slide the base rate and replication power against each other and watch R stay put while the meaning flips entirely.`)+
-    ` The reported rate alone cannot tell you which world you are in.`;
+  const lowPow = wr < 0.6;
+  rr_punch.innerHTML=`Here <b>${pct(PPV)}</b> of published findings are genuinely real (PPV), and the project reproduces <b>${pct(R)}</b>. `+
+    (lowPow
+      ? `But you’ve set replication power to just <b>${pct(wr)}</b> — so real effects keep missing significance and the rate is deflated <i>by your design</i>, not by the field. That’s the artefact to avoid: <b>power the replications up</b> (to a SESOI) and the rate climbs back to reflect PPV.`
+      : `With well-powered replications the rate <b>tracks PPV closely</b> — so a clean replication rate <i>is</i> informative about the share of real findings. `+
+        `What it can’t reveal is <b>which literature produced that PPV</b>: real effects could be rare in a rigorous field, or common in a field that runs underpowered originals (so its published hits are flukes). Both land here. `+
+        `And it sees <b>no effect heterogeneity</b> at all — whether the real effects transfer to new contexts is the §§1&amp;4 story this model leaves out.`);
 }
 [RR.pi,RR.w0,RR.wr,RR.a].forEach(e=>e.addEventListener('input',renderRep));
-rr_sick.addEventListener('click',()=>{RR.pi.value=0.04;RR.w0.value=0.80;RR.wr.value=0.90;RR.a.value=0.05;renderRep();});
-rr_solid.addEventListener('click',()=>{RR.pi.value=0.70;RR.w0.value=0.80;RR.wr.value=0.38;RR.a.value=0.05;renderRep();});
+// both presets: well-powered replications (wr=0.9), same PPV=0.5 hence same rate, via literature levers
+rr_sick.addEventListener('click',()=>{RR.pi.value=0.05;RR.w0.value=0.95;RR.wr.value=0.90;RR.a.value=0.05;renderRep();});
+rr_solid.addEventListener('click',()=>{RR.pi.value=0.20;RR.w0.value=0.20;RR.wr.value=0.90;RR.a.value=0.05;renderRep();});
 
 /* init */
 function renderAll(){renderFloor();renderDisc();renderAgg();renderIdent();renderStress();renderCoin();renderRep();}
