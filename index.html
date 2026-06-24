@@ -120,7 +120,8 @@
   <a href="#stress">6 · Stress test</a>
   <a href="#coin">7 · Coin purse</a>
   <a href="#reprate">8 · Where 36% comes from</a>
-  <a href="#valid">9 · Validation</a>
+  <a href="#ours">9 · Our take: floor &amp; RPP</a>
+  <a href="#valid">10 · Validation</a>
 </div></nav>
 
 <!-- ============ SECTION 1: FLOOR ============ -->
@@ -340,8 +341,8 @@
   <p class="lede">What a replication rate actually tracks. Each tested hypothesis is a true effect with some probability
   — the <b>base rate</b>. Only significant originals get published, so the pool that gets replicated is a mix of real
   effects and false positives, and its quality (the share that are real, <b>PPV</b>) is set by <i>literature</i>
-  properties: the base rate and how rigorously the originals were run. <b>If you power the replications well</b>
-  (e.g. to a SESOI — a choice <i>you</i> control), the rate ends up tracking PPV closely — so it does carry
+  properties: the base rate and how rigorously the originals were run. <b>When the replications are well-powered</b>
+  (real effects comfortably exceed the SESOI), the rate ends up tracking PPV closely — so it does carry
   information about the share of real findings. What it still can’t separate are two different <i>literatures</i>
   behind the same PPV.</p>
   <p class="note" style="margin:-8px 0 18px">This base-rate model is a separate, classic argument (Ioannidis-style), <b>not</b> part of Devezer &amp; Buzbas. It complements them: it shows what a rate <i>does</i> track, while the paper explains the limits of reading it as a verdict. Note this model has <b>no effect heterogeneity</b> (every real effect replicates at the same power) — the spread/ρ story is §§1&amp;4.</p>
@@ -356,9 +357,9 @@
       <div class="ctl"><div class="lab"><b>Original-study power</b><span class="val" id="rr_w0_v">0.80</span></div>
         <input type="range" id="rr_w0" min="0.1" max="0.99" step="0.01" value="0.8">
         <div class="hint">How rigorously the originals were run. Low power ⇒ more flukes/inflated effects get published. <b>Also a property of the literature.</b></div></div>
-      <div class="ctl"><div class="lab"><b>Replication power <span style="color:var(--indigo)">(you control this)</span></b><span class="val" id="rr_wr_v">0.90</span></div>
+      <div class="ctl"><div class="lab"><b>Replication power <span style="color:var(--indigo)">(partly your design)</span></b><span class="val" id="rr_wr_v">0.90</span></div>
         <input type="range" id="rr_wr" min="0.1" max="0.99" step="0.01" value="0.9">
-        <div class="hint">A <i>design</i> choice, not a field property: power to a SESOI ⇒ high. Dragging it <i>down</i> deflates the rate regardless of the literature — that’s a flaw in the replication project, not evidence about the field. Keep it high.</div></div>
+        <div class="hint">= your sample size <i>×</i> the true effect size — so it’s partly a design choice (n, the SESOI you power for) and partly the field’s (power is only high if real effects actually exceed your SESOI). The two presets hold it fixed and high so the contrast comes from the literature levers above. If you drag it down, note the rate falls but the cause is ambiguous: under-resourced replications, or genuinely tiny effects — the rate can’t tell you which.</div></div>
       <div class="ctl"><div class="lab"><b>Error rate α</b><span class="val" id="rr_a_v">0.05</span></div>
         <input type="range" id="rr_a" min="0.01" max="0.2" step="0.01" value="0.05"></div>
     </div>
@@ -377,9 +378,64 @@
   <div class="punch" id="rr_punch"></div>
 </div></section>
 
-<!-- ============ SECTION 9: VALIDATION ============ -->
+<!-- ============ SECTION 9: OUR ANALYSIS ============ -->
+<section id="ours"><div class="wrap">
+  <h2><span class="secnum">9</span>Does the “effective replications” claim apply to RPP-style projects?<span class="badge ext">Our analysis · questions one of the paper’s claims</span></h2>
+  <p class="lede">Sections 1–8 reproduce the paper. This one is <b>our own argument</b>, kept separate, about a single
+  result — the “effective number of replications” in §§1 and 5 — for the common kind of project that replicates many
+  <i>different</i> results once each (RPP, SCORE).</p>
+  <div class="twocol">
+    <div class="card" style="padding:18px 20px;border-left:4px solid var(--amber)">
+      <div style="font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--amber);font-weight:700;margin-bottom:8px">What the paper says</div>
+      <p style="margin:.2em 0;font-size:14.5px">It defines two models and, for a project’s headline rate, reports the
+      <b>benchmark</b> effective sample size <i>m</i><sub>e</sub> = <i>m</i>/[1+(<i>m</i>−1)ρ]: RPP’s 100 replications
+      “carry the inferential weight of ~9 exact ones” at ρ=0.10. It states this conditionally — “if the benchmark model
+      is the correct description” — and notes that under the operational model (one verdict per experiment) the effective
+      sample size is exactly <i>m</i>, with the caveat that binary data can’t reveal which model holds.</p>
+    </div>
+    <div class="card" style="padding:18px 20px;border-left:4px solid var(--indigo)">
+      <div style="font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--indigo);font-weight:700;margin-bottom:8px">Where we’d push</div>
+      <p style="margin:.2em 0;font-size:14.5px">RPP and SCORE replicate many <i>distinct</i> results once each — the
+      operational structure (each result its own rate), not the benchmark (all results sharing one latent rate).
+      Heterogeneity among <i>independent</i> results is not intraclass correlation: with one verdict per result the count
+      is exactly Binomial(<i>m</i>, μ), so the <b>average</b> replicability is estimated with ordinary precision and every
+      study is fully informative — <i>m</i><sub>e</sub> = <i>m</i>. The “≈9 effective” figure rests on the benchmark’s
+      shared-latent dependence, which a spread of distinct effects does not by itself create.</p>
+    </div>
+  </div>
+  <div class="card" style="margin-top:18px">
+    <div class="controls" style="grid-template-columns:1fr 1fr;gap:18px 26px">
+      <div class="ctl"><div class="lab"><b>Results in the project m</b><span class="val" id="ou_m_v">100</span></div>
+        <input type="range" id="ou_m" min="5" max="500" step="1" value="100">
+        <div class="presets" style="margin-top:6px"><button class="pre" id="ou_rpp">RPP (100)</button><button class="pre" id="ou_score">SCORE (274)</button></div></div>
+      <div class="ctl"><div class="lab"><b>Heterogeneity ρ</b><span class="val" id="ou_rho_v">0.10</span></div>
+        <input type="range" id="ou_rho" min="0" max="0.5" step="0.01" value="0.1"></div>
+    </div>
+    <div class="stats">
+      <div class="stat"><div class="k">Benchmark mₑ — results share one rate</div><div class="v" id="ou_bench" style="color:var(--amber)">—</div></div>
+      <div class="stat"><div class="k">Operational mₑ — distinct results</div><div class="v" id="ou_op" style="color:var(--indigo)">—</div></div>
+      <div class="stat"><div class="k">95% margin on the average rate (μ=0.5)</div><div class="v" id="ou_se">—</div></div>
+    </div>
+  </div>
+  <div class="punch" id="ou_punch"></div>
+  <details style="margin-top:16px"><summary>The strongest reply from the paper’s authors — and ours</summary>
+    <div style="margin-top:10px">
+    <p><b>Them:</b> the 36% is not the average of a sampling scheme; it is read as a replicability <i>property</i> of a
+    literature or of underlying results. That target needs a model of latent heterogeneity and dependence; the benchmark
+    is the idealised diagnostic for it, and the binomial precision is illusory because it cannot see ρ.</p>
+    <p><b>Us:</b> granted — but then <i>m</i><sub>e</sub> ≈ 9 is a conditional sensitivity calculation under an added
+    shared-latent model, a quantity about that model rather than about the RPP data. It carries weight only with that
+    dependence defended for a set of distinct effects.</p>
+    <p><b>What holds with no benchmark assumption:</b> ρ — the spread of replicability across results — is unrecoverable
+    from one verdict each; the aggregate’s meaning is composition-dependent; per-result “replicable / not” rests on a
+    single verdict. Those are the paper’s durable points. The effective-replications strand is the part that turns on a
+    modelling choice, and for many-targets-once projects we read the average as estimable.</p>
+    </div></details>
+</div></section>
+
+<!-- ============ SECTION 10: VALIDATION ============ -->
 <section id="valid"><div class="wrap">
-  <h2><span class="secnum">9</span>Validation against the paper</h2>
+  <h2><span class="secnum">10</span>Validation against the paper</h2>
   <p class="lede">Durable correctness check: the engine’s output vs. the numbers printed in the paper.
   Computed live, in this page.</p>
   <div class="card" style="padding:6px 6px"><table class="valtable" id="valid_tbl"></table></div>
@@ -658,21 +714,21 @@ document.getElementById('answer').innerHTML=`
 <p><b>Short answer: an X% replication rate is informative only under conditions that real large-scale projects do not meet, and — crucially — you cannot check from the rate whether those conditions hold.</b></p>
 <p>Three things have to be true for the percentage to mean something:</p>
 <ol>
-<li><b>Low heterogeneity (ρ near 0).</b> Otherwise the reported rate has an irreducible uncertainty floor (Section 1): 274 SCORE studies carry the information of ~10. The rate is far noisier than the headcount implies.</li>
+<li><b>Low heterogeneity (ρ near 0)</b> — at least where the rate is read as one result’s shared replicability. Under that benchmark reading, heterogeneity imposes a precision floor that more studies can’t remove (§1). For a project averaging many <i>distinct</i> results, the mean is estimable instead (§9) — so this condition binds single-result claims more than the headline average.</li>
 <li><b>ρ must be known.</b> It isn’t, and can’t be — one binary verdict per study makes ρ mathematically non-identifiable (Section 4). You literally cannot tell a homogeneous literature from a wildly heterogeneous one from the verdicts.</li>
 <li><b>A stated, homogeneous target.</b> A project-wide % averages over a mixture of unrelated results (Section 3). The same 36% is consistent with “mostly solid science plus some false positives” and with “uniformly mediocre science.” Without specifying the mixture and a base rate of true effects to compare against, there is no “expected rate” the observed one is high or low relative to.</li>
 </ol>
 <p><b>So is it meaningless?</b> Not quite — that would overclaim. The rate <i>does</i> carry information when μ is extreme and ρ is genuinely small (Section 6’s green region), and an extreme observed rate still loosely bounds the truth. And replication remains valuable for what it was always good for: estimating effect <i>sizes</i>, calibrating measures, mapping context-sensitivity. Richer data (continuous effect sizes, k&gt;1 exact replications) <i>can</i> recover ρ — and when ML4’s continuous data is used, ρ turns out to be large.</p>
 <p><b>What is unwarranted</b> is using a project-wide replication <i>percentage</i> as a verdict on a field — “the literature is X% trustworthy,” “there is/ isn’t a crisis.” That demarcation is the one job the number cannot do, because the quantity that decides whether it can (ρ) is invisible in the data that produced it. <i>The crisis, if there is one, cannot be established by the methods used to declare it.</i></p>
 <h3 style="font-size:18px;margin:22px 0 6px">Where this argument is contested</h3>
-<p>The artifact gives the paper its strongest form. An adversarial review (run on this build) finds the <b>narrow</b> claims hold but the <b>broad</b> thesis is debatable — worth flagging for a colleague:</p>
+<p>The artifact gives the paper its strongest form. Its <b>narrow</b> claims hold; the <b>broad</b> thesis is debatable on several fronts:</p>
 <ul>
 <li><b>It targets a lossy summary.</b> The non-identifiability is exact for <i>one bit per study</i>, but real projects record effect sizes, CIs, and sites — and the paper itself recovers ρ from ML4’s continuous data. The lesson is arguably “don’t discard the continuous data,” not “replication can’t detect problems.”</li>
-<li><b>The floor is model-specific.</b> The irreducible floor lives in the <i>benchmark</i> (shared-latent) model. Under the <i>operational</i> model the mean rate is estimable and shrinks like 1/m — the paper uses whichever model is more damaging for each point.</li>
+<li><b>The floor is model-specific.</b> The irreducible floor lives in the <i>benchmark</i> (shared-latent) model; under the <i>operational</i> model the mean rate is estimable and shrinks like 1/m. For projects that replicate many distinct results once, the operational reading fits — §9 works this through.</li>
 <li><b>“Uninterpretable” may be too strong.</b> Mixture averages (unemployment, mortality) are decision-useful when the population and estimand are stated. The fair charge is that a replication rate is <i>composition-dependent</i>, not that it is meaningless.</li>
 <li><b>Imperfect demarcation ≠ no signal.</b> A 36% rate alongside smaller replication effects, sign flips, and publication-bias evidence can still rationally update beliefs about a literature, even if it can’t cleanly classify each result.</li>
 </ul>
-<p>Net: the paper decisively undercuts treating a headline replication <i>percentage</i> as a verdict or crisis-detector. It does <i>not</i> show that replication evidence carries no signal about fragile literatures. That distinction is the honest answer to your question.</p>`;
+<p>Net: the paper decisively undercuts treating a headline replication <i>percentage</i> as a verdict or crisis-detector. It does <i>not</i> show that replication evidence carries no signal about fragile literatures. That distinction is the honest bottom line.</p>`;
 
 /* ============ SECTION 7: COIN PURSE ============ */
 const CO={mu:co_mu,rig:co_rig,n:co_n};
@@ -732,7 +788,7 @@ function renderRep(){
   const lowPow = wr < 0.6;
   rr_punch.innerHTML=`Here <b>${pct(PPV)}</b> of published findings are genuinely real (PPV), and the project reproduces <b>${pct(R)}</b>. `+
     (lowPow
-      ? `But you’ve set replication power to just <b>${pct(wr)}</b> — so real effects keep missing significance and the rate is deflated <i>by your design</i>, not by the field. That’s the artefact to avoid: <b>power the replications up</b> (to a SESOI) and the rate climbs back to reflect PPV.`
+      ? `Replication power is only <b>${pct(wr)}</b>, so the rate is pulled down — but the cause is <b>ambiguous</b>: the replications may be under-resourced (a design issue), <i>or</i> the real effects may be too small to clear the SESOI (a field property, and arguably the right answer). The rate alone can’t separate those. Powering up lifts the rate only if the effects are genuinely there.`
       : `With well-powered replications the rate <b>tracks PPV closely</b> — so a clean replication rate <i>is</i> informative about the share of real findings. `+
         `What it can’t reveal is <b>which literature produced that PPV</b>: real effects could be rare in a rigorous field, or common in a field that runs underpowered originals (so its published hits are flukes). Both land here. `+
         `And it sees <b>no effect heterogeneity</b> at all — whether the real effects transfer to new contexts is the §§1&amp;4 story this model leaves out.`);
@@ -742,8 +798,27 @@ function renderRep(){
 rr_sick.addEventListener('click',()=>{RR.pi.value=0.05;RR.w0.value=0.95;RR.wr.value=0.90;RR.a.value=0.05;renderRep();});
 rr_solid.addEventListener('click',()=>{RR.pi.value=0.20;RR.w0.value=0.20;RR.wr.value=0.90;RR.a.value=0.05;renderRep();});
 
+/* ============ SECTION 9: OUR ANALYSIS ============ */
+const OU={m:ou_m,rho:ou_rho};
+function renderOurs(){
+  const m=+OU.m.value,rho=+OU.rho.value;
+  ou_m_v.textContent=m;ou_rho_v.textContent=fmt(rho);
+  const bench=me(m,rho);
+  ou_bench.textContent=fmt(bench,1);
+  ou_op.textContent=m;
+  const margin=1.96*Math.sqrt(0.25/m)*100;
+  ou_se.innerHTML='±'+fmt(margin,1)+'<small> pts</small>';
+  ou_punch.innerHTML=`At m=${m}, ρ=${fmt(rho)}: the <b>benchmark</b> model (all results share one latent rate) counts these as `+
+    `<b style="color:var(--amber)">${fmt(bench,1)}</b> effective replications; the <b>operational</b> model (distinct results, one verdict each) counts `+
+    `<b style="color:var(--indigo)">${m}</b>, with the average rate pinned to about ±${fmt(margin,0)} points. `+
+    `The gap turns entirely on whether the results <b>share</b> a latent rate (benchmark) or each carry <b>their own</b> (operational); a spread of distinct effects gives the latter.`;
+}
+[OU.m,OU.rho].forEach(e=>e.addEventListener('input',renderOurs));
+ou_rpp.addEventListener('click',()=>{OU.m.value=100;OU.rho.value=0.10;renderOurs();});
+ou_score.addEventListener('click',()=>{OU.m.value=274;OU.rho.value=0.10;renderOurs();});
+
 /* init */
-function renderAll(){renderFloor();renderDisc();renderAgg();renderIdent();renderStress();renderCoin();renderRep();}
+function renderAll(){renderFloor();renderDisc();renderAgg();renderIdent();renderStress();renderCoin();renderRep();renderOurs();}
 renderAll();
 window.addEventListener('resize',()=>{clearTimeout(window._rt);window._rt=setTimeout(renderAll,150);});
 
